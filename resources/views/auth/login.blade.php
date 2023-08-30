@@ -37,14 +37,14 @@
                     <p class="lead">Login to your account</p>
                 </div>
                 <div class="body">
-                    <form class="form-auth-small" action="index.html">
+                    <form class="form-auth-small" id="formlogin">
                         <div class="form-group">
                             <label for="signin-email" class="control-label sr-only">Email</label>
-                            <input type="email" class="form-control" id="signin-email" value="user@domain.com" placeholder="Email">
+                            <input type="email" class="form-control" id="signin-email" value="" placeholder="username">
                         </div>
                         <div class="form-group">
                             <label for="signin-password" class="control-label sr-only">Password</label>
-                            <input type="password" class="form-control" id="signin-password" value="thisisthepassword" placeholder="Password">
+                            <input type="password" class="form-control" id="signin-password" value="" placeholder="Password">
                         </div>
                         <div class="form-group clearfix">
                             <label class="fancy-checkbox element-left">
@@ -52,7 +52,7 @@
                                 <span>Remember me</span>
                             </label>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-lg btn-block">LOGIN</button>
+                        <button id="btnlogin" type="button" class="btn btn-primary btn-lg btn-block">LOGIN</button>
                         <div class="bottom">
                             <span class="helper-text m-b-10"><i class="fa fa-lock"></i><a href="page-forgot-password.html">Forgot password?</a></span>
                             <span>Don't have an account? <a href="page-register.html">Register</a></span>
@@ -67,5 +67,27 @@
 <script src="{{ asset('/bundles/libscripts.bundle.js') }}"></script>
 <script src="{{ asset('/bundles/vendorscripts.bundle.js') }}"></script>
 <script src="{{ asset('/bundles/mainscripts.bundle.js') }}"></script>
+
+<script>
+    $("#btnlogin").click(function(){
+        const formData = new FormData();
+        formData.append('username', $("#signin-email").val())
+        formData.append('password', $("#signin-password").val())
+        xhr = new XMLHttpRequest();
+        xhr.withCredentials = false;
+        xhr.open('POST', '{{ route('dologin') }}');
+        xhr.setRequestHeader("X-CSRF-TOKEN", '{{ csrf_token() }}');
+        xhr.onload = function () {
+            let response = JSON.parse(xhr.responseText);
+            if(response.status){
+                window.location.href = response.url;
+            }
+        };
+        xhr.onerror = function () {
+            console.log('err')
+        }
+        xhr.send(formData);
+    })
+</script>
 </body>
 </html>
