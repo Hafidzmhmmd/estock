@@ -9,10 +9,10 @@
     <div class="sidebar-scroll">
         <nav id="left-sidebar-nav" class="sidebar-nav mt-3">
             <ul id="main-menu" class="metismenu">
-                <li class="active"><a href="index.html"><i class="icon-home"></i><span>Dashboard</span></a></li>
+                <li class="active"><a href="/"><i class="icon-home"></i><span>Dashboard</span></a></li>
                 <li><a href="#uiElements" class="has-arrow"><i class="icon-energy"></i><span>Pengajuan</span></a>
                     <ul>
-                        <li><a href="ui-card.html">Pembelian Baru</a></li>
+                        <li><a href="pembelian">Pembelian Baru</a></li>
                     </ul>
                 </li>
                 <li><a href="app-inbox.html"><i class="icon-grid"></i><span>Gudang</span></a></li>

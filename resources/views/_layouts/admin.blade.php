@@ -17,6 +17,8 @@
 
         <link rel="stylesheet" href="{{ asset('/css/app.css') }}">
         <link rel="stylesheet" href="{{ asset('/css/color_skins.css') }}">
+        
+        <link rel="stylesheet" href="{{ asset('/vendor/sweetalert/sweetalert.css') }}">
     </head>
     <body class="theme-orange">
         <div id="wrapper">

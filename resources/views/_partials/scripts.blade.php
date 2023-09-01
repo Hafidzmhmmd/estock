@@ -8,6 +8,9 @@
 
 <script src="{{ asset('/bundles/mainscripts.bundle.js') }}"></script>
 <script src="{{ asset('/js/index.js') }}"></script>
+
+<script src="{{ asset('/vendor/repeater/jquery.repeater.min.js') }}"></script>
+<script src="{{ asset('/vendor/sweetalert/sweetalert.min.js') }}"></script>
 @stack('js_vendor')
 <script>
      $.ajaxSetup({

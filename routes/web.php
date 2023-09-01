@@ -17,4 +17,6 @@ Route::post('/dologin', 'AuthController@doLogin')->name('dologin');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/', 'DashboardController@index')->name('dashboard');
+
+    Route::get('/pembelian', 'PengajuanController@pembelian')->name('pembelian');
 });
