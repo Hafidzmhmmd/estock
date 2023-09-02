@@ -19,4 +19,8 @@ class DataController extends Controller
         $data['subkelompok'] = SubKelompok::all();
         return view('modules.data.barang', $data);
     }
+
+    public function barangDataTables(Request $request){
+        return datatables(Barang::all())->toJson();
+    }
 }

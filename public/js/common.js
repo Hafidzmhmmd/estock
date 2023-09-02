@@ -3,7 +3,7 @@ $(function() {
 	skinChanger();
     initSparkline();
     CustomJs();
-    
+
     setTimeout(function() {
         $('.page-loader-wrapper').fadeOut();
     }, 50);
@@ -22,7 +22,7 @@ function skinChanger() {
 	$('.choose-skin li').on('click', function() {
 	    var $body = $('body');
 	    var $this = $(this);
-  
+
 	    var existTheme = $('.choose-skin li.active').data('theme');
 
 	    $('.choose-skin li').removeClass('active');
@@ -36,7 +36,7 @@ function skinChanger() {
 		$('#left-sidebar .navbar-brand .logo').attr('src', darkLogo);
 	    }
 	    else{
-		$('#left-sidebar .navbar-brand .logo').attr('src', lightLogo);    
+		$('#left-sidebar .navbar-brand .logo').attr('src', lightLogo);
 	    }
 	});
 }
@@ -161,15 +161,15 @@ function CustomJs() {
 			$loading.waitMe('hide');
 		}, 2000);
 	});
-    
-    // Full screen class 
+
+    // Full screen class
 	$('.full-screen').on('click', function() {
 		$(this).parents('.card').toggleClass('fullscreen');
     });
-    
+
     // Select all checkbox
     $('.check-all').on('click',function(){
-    
+
         if(this.checked){
             $(this).parents('.check-all-parent').find('.checkbox-tick').each(function(){
             this.checked = true;
@@ -310,12 +310,12 @@ window.hexabit= {
 };
 
 // Wraptheme Website live chat widget js please remove on your project
-var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-(function(){
-var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-s1.async=true;
-s1.src='https://embed.tawk.to/5c6d4867f324050cfe342c69/default';
-s1.charset='UTF-8';
-s1.setAttribute('crossorigin','*');
-s0.parentNode.insertBefore(s1,s0);
-})();
+// var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+// (function(){
+// var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+// s1.async=true;
+// s1.src='https://embed.tawk.to/5c6d4867f324050cfe342c69/default';
+// s1.charset='UTF-8';
+// s1.setAttribute('crossorigin','*');
+// s0.parentNode.insertBefore(s1,s0);
+// })();

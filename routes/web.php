@@ -28,5 +28,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('data')->name('data.')->group(function () {
         Route::get('barang', 'DataController@dataBarang')->name('barang');
+        Route::get('barangDataTables', 'DataController@barangDataTables')->name('barangDataTables');
     });
 });
