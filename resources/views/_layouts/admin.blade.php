@@ -17,23 +17,17 @@
 
         <link rel="stylesheet" href="{{ asset('/css/app.css') }}">
         <link rel="stylesheet" href="{{ asset('/css/color_skins.css') }}">
-        
+
         <link rel="stylesheet" href="{{ asset('/vendor/sweetalert/sweetalert.css') }}">
+        <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+        <link href="https://cdnjs.com/libraries/select2-bootstrap-theme/" rel="stylesheet" />
     </head>
     <body class="theme-orange">
         <div id="wrapper">
             @include('_partials.headerbar')
             @include('_partials.sidebar')
 
-            <div id="main-content">
-                <div class="block-header">
-                    <div class="row clearfix">
-                        <div class="col-md-6 col-sm-12">
-                            <h2>Dashboard</h2>
-                        </div>
-                    </div>
-                </div>
-
+            <div id="main-content" class="pt-4">
                 <div class="container-fluid">
                     @yield('content')
                 </div>

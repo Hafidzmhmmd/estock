@@ -12,10 +12,10 @@
                 <li class="active"><a href="/"><i class="icon-home"></i><span>Dashboard</span></a></li>
                 <li><a href="#uiElements" class="has-arrow"><i class="icon-energy"></i><span>Pengajuan</span></a>
                     <ul>
-                        <li><a href="pembelian">Pembelian Baru</a></li>
+                        <li><a href="{{route('pengajuan.pembelian')}}">Pembelian Baru</a></li>
                     </ul>
                 </li>
-                <li><a href="app-inbox.html"><i class="icon-grid"></i><span>Gudang</span></a></li>
+                <li><a href="{{route('gudang.index')}}"><i class="icon-grid"></i><span>Gudang</span></a></li>
                 <li><a href="#uiElements" class="has-arrow"><i class="icon-folder-alt"></i><span>Laporan</span></a>
                     <ul>
                         <li><a href="ui-card.html">Pembelian</a></li>
@@ -24,7 +24,7 @@
                 </li>
                 <li><a href="#uiElements" class="has-arrow"><i class="icon-settings"></i><span>Pengaturan</span></a>
                     <ul>
-                        <li><a href="ui-card.html">Pembelian</a></li>
+                        <li><a href="{{route('data.barang')}}">Barang</a></li>
                         <li><a href="ui-card.html">Opname Stock</a></li>
                     </ul>
                 </li>
