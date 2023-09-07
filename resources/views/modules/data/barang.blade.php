@@ -6,14 +6,25 @@
         <button type="button" class="btn btn-primary btn-round float-right">Tambah Data</button>
         <h5 class="card-title">Pengaturan Data Barang</h5>
         <hr>
-        <div class="row">
+        <div class="row" id="filtertable">
+            <div class="col-4">
+                <div class="form-group">
+                    <label for="sclSubSubKelompok">Sub Sub Kelompok</label>
+                    <select class="form-control" id="sclSubSubKelompok"  data-parent='sclSubKelompok'>
+                        <option value="" selected="true">Semua Sub Sub Kelompok Barang</option>
+                        @foreach ($subsubkelompok as $subsub)
+                            <option data-parent='{{str_pad($subsub->subkel_id,2,'0',STR_PAD_LEFT)}}' value="{{str_pad($subsub->sub_subkel_id,3,'0',STR_PAD_LEFT)}}">{{$subsub->sub_subkelompok}}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
             <div class="col-4">
                 <div class="form-group">
                     <label for="sclSubKelompok">Sub Kelompok</label>
-                    <select class="form-control" id="sclSubKelompok">
-                        <option value="" selected="true" disabled="disabled">[Pilih Kelompok Barang]</option>
+                    <select class="form-control" id="sclSubKelompok" data-parent='slcKelompok' >
+                        <option value="" selected="true">Semua Sub Kelompok Barang</option>
                         @foreach ($subkelompok as $subkel)
-                            <option value="{{$subkel->subkel_id}}">{{$subkel->subkelompok}}</option>
+                            <option data-parent="{{str_pad($subkel->kel_id,2,'0',STR_PAD_LEFT)}}" value="{{str_pad($subkel->subkel_id,2,'0',STR_PAD_LEFT)}}">{{$subkel->subkelompok}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -21,21 +32,10 @@
             <div class="col-4">
                 <div class="form-group">
                     <label for="slcKelompok">Kelompok</label>
-                    <select class="form-control" id="slcKelompok">
-                        <option value="" selected="true" disabled="disabled">[Pilih Kelompok Barang]</option>
+                    <select class="form-control" id="slcKelompok" data-parent=''>
+                        <option value="" selected="true">Semua Kelompok Barang</option>
                         @foreach ($kelompok_barang as $kel)
-                            <option value="{{$kel->kel_id}}">{{$kel->kelompok}}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="col-4">
-                <div class="form-group">
-                    <label for="slcBidang">Bidang</label>
-                    <select class="form-control" id="slcBidang">
-                        <option value="" selected="true" disabled="disabled">[Pilih Bidang Barang]</option>
-                        @foreach ($bidang_barang as $bid)
-                            <option value="{{$bid->bid_id}}">{{$bid->bidang}}</option>
+                            <option value="{{str_pad($kel->kel_id,2,'0',STR_PAD_LEFT)}}">{{$kel->kelompok}}</option>
                         @endforeach
                     </select>
                 </div>
@@ -65,7 +65,8 @@
             <table class="table center-aligned-table" id="tblBarang">
                 <thead>
                 <tr>
-                    <th>Kode</th>
+                    <th width='15%'>Sub Sub Kelompok</th>
+                    <th width='15%'>Kode</th>
                     <th>Uraian</th>
                     <th>Satuan</th>
                     {{-- <th>Harga Maksimum</th> --}}
@@ -85,11 +86,21 @@
 @push('js')
 <script>
     var dtBarang = $('#tblBarang').DataTable({
+        processing: true,
+        serverSide: true,
         "ajax": {
             "url": "{{ route('data.barangDataTables') }}",
+            data: function (d) {
+                d.subkel = $('#sclSubKelompok').val()
+                d.kel = $('#slcKelompok').val()
+                d.subsub = $('#sclSubSubKelompok').val()
+            }
         },
         columns: [
             // columns according to JSON
+            {
+                data: 'subsubkelompok'
+            },
             {
                 data: 'kode'
             },
@@ -104,32 +115,9 @@
             },
         ],
         columnDefs: [
-            // {
-            //     // For Responsive
-            //     className: 'control',
-            //     orderable: false,
-            //     responsivePriority: 2,
-            //     targets: 0,
-            //     render: function(data, type, full, meta) {
-            //         if (data) {
-            //             return `<div class="badge badge-primary">${data}</div>`
-            //         } else return data
-            //     }
-            // },
-            // {
-            //     targets: 6,
-            //     orderable: false,
-            //     render: function(data, type, full, meta) {
-            //         var className = 'primary'
-            //         if (data === 'Draft') {
-            //             className = 'light-warning'
-            //         }
-            //         return `<div class="badge badge-${className}">${data}</div>`
-            //     }
-            // },
             {
                 // Actions
-                targets: 3,
+                targets: -1,
                 title: 'Actions',
                 orderable: false,
                 render: function(data, type, full, meta) {
@@ -141,7 +129,7 @@
             }
         ],
         order: [
-            [1, 'desc']
+            [1, 'asc']
         ],
         dom: '<"d-flex justify-content-between align-items-center header-actions mx-1 row mt-75"' +
             '<"col-lg-12 col-xl-6" l>' +
@@ -162,55 +150,24 @@
             }
         },
         initComplete: function() {
-            // Adding role filter once table initialized
-            // this.api()
-            //     .columns(2)
-            //     .every(function() {
-            //         var column = this;
-            //         var select = $(
-            //                 '<select id="filter-kepemilikan" class="form-control text-capitalize mb-md-0 mb-2"><option value=""> Filter Kepemilikan </option></select>'
-            //             )
-            //             .appendTo('.filter-kepemilikan')
-            //             .on('change', function() {
-            //                 var val = $.fn.dataTable.util.escapeRegex($(this).val());
-            //                 column.search(val ? '^' + val + '$' : '', true, false).draw();
-            //             });
-
-            //         column
-            //             .data()
-            //             .unique()
-            //             .sort()
-            //             .each(function(d, j) {
-            //                 if (d)
-            //                     select.append('<option value="' + d + '" class="text-capitalize">' +
-            //                         d + '</option>');
-            //             });
-            //     });
-            // // Adding plan filter once table initialized
-            // this.api()
-            //     .columns(6)
-            //     .every(function() {
-            //         var column = this;
-            //         var select = $(
-            //                 '<select id="filter_status" class="form-control text-capitalize mb-md-0 mb-2"><option value=""> Filter Status Permohonan </option></select>'
-            //             )
-            //             .appendTo('.filter_status')
-            //             .on('change', function() {
-            //                 var val = $.fn.dataTable.util.escapeRegex($(this).val());
-            //                 column.search(val ? '^' + val + '$' : '', true, false).draw();
-            //             });
-
-            //         column
-            //             .data()
-            //             .unique()
-            //             .sort()
-            //             .each(function(d, j) {
-            //                 select.append('<option value="' + d + '" class="text-capitalize">' + d +
-            //                     '</option>');
-            //             });
-            //     });
 
         }
+    });
+
+    $('#sclSubKelompok, #slcKelompok, #sclSubSubKelompok').change(function(){
+        let id = $(this).attr('id');
+        let child = $(`#filtertable select[data-parent='${id}']`);
+        let val = $(this).val();
+        if(child && val){
+            child.find(`option[data-parent!=${val}]`).hide()
+            let cc = child.find(`option:selected`).attr('data-parent')
+            if(cc != val){
+                child.val('')
+            }
+        } else if(child){
+            child.find(`option`).show()
+        }
+        dtBarang.draw();
     });
 </script>
 

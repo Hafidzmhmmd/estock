@@ -18,4 +18,9 @@ class Barang extends Model
      * @var string
      */
     protected $primaryKey = 'id';
+
+    public function SubSubKelompok()
+    {
+        return $this->belongsTo('App\SubSubKelompok', 'sub_subkel_id', 'sub_subkel_id');
+    }
 }
