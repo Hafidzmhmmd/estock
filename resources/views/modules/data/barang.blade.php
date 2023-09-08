@@ -13,7 +13,11 @@
                     <select class="form-control" id="sclSubSubKelompok"  data-parent='sclSubKelompok'>
                         <option value="" selected="true">Semua Sub Sub Kelompok Barang</option>
                         @foreach ($subsubkelompok as $subsub)
-                            <option data-parent='{{str_pad($subsub->subkel_id,2,'0',STR_PAD_LEFT)}}' value="{{str_pad($subsub->sub_subkel_id,3,'0',STR_PAD_LEFT)}}">{{$subsub->sub_subkelompok}}</option>
+                        <option
+                                data-parent='{{sprintf('%02d', $subsub->subkel_id).$subsub->kel_id.$subsub->bid_id.$subsub->gol_id}}'
+                                value="{{sprintf('%03d', $subsub->sub_subkel_id).$subsub->subkel_id.$subsub->kel_id.$subsub->bid_id.$subsub->gol_id}}">
+                                {{$subsub->sub_subkelompok}}
+                            </option>
                         @endforeach
                     </select>
                 </div>
@@ -24,7 +28,11 @@
                     <select class="form-control" id="sclSubKelompok" data-parent='slcKelompok' >
                         <option value="" selected="true">Semua Sub Kelompok Barang</option>
                         @foreach ($subkelompok as $subkel)
-                            <option data-parent="{{str_pad($subkel->kel_id,2,'0',STR_PAD_LEFT)}}" value="{{str_pad($subkel->subkel_id,2,'0',STR_PAD_LEFT)}}">{{$subkel->subkelompok}}</option>
+                            <option
+                                data-parent="{{sprintf('%02d', $subkel->kel_id).$subkel->bid_id.$subkel->gol_id}}"
+                                value="{{sprintf('%02d', $subkel->subkel_id).$subkel->kel_id.$subkel->bid_id.$subkel->gol_id}}">
+                                {{$subkel->subkelompok}}
+                                </option>
                         @endforeach
                     </select>
                 </div>
@@ -35,7 +43,10 @@
                     <select class="form-control" id="slcKelompok" data-parent=''>
                         <option value="" selected="true">Semua Kelompok Barang</option>
                         @foreach ($kelompok_barang as $kel)
-                            <option value="{{str_pad($kel->kel_id,2,'0',STR_PAD_LEFT)}}">{{$kel->kelompok}}</option>
+                        <option
+                            value="{{sprintf('%02d', $kel->kel_id).$kel->bid_id.$kel->gol_id}}">
+                            {{$kel->kelompok}}
+                        </option>
                         @endforeach
                     </select>
                 </div>

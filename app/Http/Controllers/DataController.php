@@ -22,21 +22,27 @@ class DataController extends Controller
 
     public function barangDataTables(Request $request){
         $data = Barang::select('*');
-        $ssk = SubSubKelompok::pluck('sub_subkelompok','sub_subkel_id')->toArray();
+        $ssk = SubSubKelompok::all()->toArray();
+        $subsub = [];
+        foreach ($ssk as $s){
+            $identifier = $s["sub_subkel_id"].$s["subkel_id"].$s["kel_id"].$s["bid_id"].$s["gol_id"];
+            $subsub[$identifier] = $s["sub_subkelompok"];
+        }
         return Datatables::of($data)
-        ->editColumn('subsubkelompok', function($data) use($ssk)
+        ->editColumn('subsubkelompok', function($data) use($subsub)
         {
-           return $ssk[$data->sub_subkel_id];
+            $identifier = $data->sub_subkel_id.$data->subkel_id.$data->kel_id.$data->bid_id.$data->gol_id;
+           return $subsub[$identifier];
         })
         ->filter(function ($instance) use ($request) {
+            if (!empty($request->kel)) {
+                $instance->whereRaw("CONCAT(kel_id,bid_id,gol_id) = ?",[$request->kel]);
+            }
             if (!empty($request->subkel)) {
-                $instance->where('subkel_id', $request->subkel);
+                $instance->whereRaw("CONCAT(subkel_id,kel_id,bid_id,gol_id) = ?",[$request->subkel]);
             }
             if (!empty($request->subsub)) {
-                $instance->where('sub_subkel_id', $request->subsub);
-            }
-            if (!empty($request->kel)) {
-                $instance->where('kel_id', $request->kel);
+                $instance->whereRaw("CONCAT(sub_subkel_id,subkel_id,kel_id,bid_id,gol_id) = ?",[$request->subsub]);
             }
         })
         ->toJson();

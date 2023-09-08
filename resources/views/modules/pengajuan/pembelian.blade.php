@@ -1,136 +1,68 @@
 @extends('_layouts.admin')
 
 @section('content')
-    <div class="row clearfix">
-        <div class="col-lg-12 col-md-12 col-sm-12">
-            <div class="card">
-                <div class="header">
-                    <h2>Pembelian Baru</h2>
-                    {{-- <ul class="header-dropdown dropdown dropdown-animated scale-left">
-                        <li> <a href="javascript:void(0);" data-toggle="cardloading" data-loading-effect="pulse"><i class="icon-refresh"></i></a></li>
-                        <li><a href="javascript:void(0);" class="full-screen"><i class="icon-size-fullscreen"></i></a></li>
-                    </ul> --}}
-                    <ul class="header-dropdown dropdown dropdown-animated scale-left">
-                        <button type="button" class="btn btn-success mb-2" onclick="ajukanBarang()">
-                            <i class="fa fa-send"></i> <span>Ajukan</span>
-                        </button>
-                    </ul>
-                </div>
-                <div class="card-body">
-                    <form method="post" class="invoice-repeater" id="form_ajukan_barang">
-                        <div data-repeater-list="invoice">
-                            <div data-repeater-item class="listItem">
-                                <div class="row d-flex align-items-end">
-                                    <div class="col-md-4 col-12">
-                                        <div class="form-group">
-                                            <label for="namabarang">Nama Barang</label>
-                                                <select class="js-example-basic-single js-states form-control" id="namabarang">
-                                                    <optgroup label="Alaskan/Hawaiian Time Zone">
-                                                    <option value="AK" data-select2-id="select2-data-14-vmjs">Alaska</option>
-                                                    <option value="HI">Hawaii</option>
-                                                    </optgroup>
-                                                    <optgroup label="Pacific Time Zone">
-                                                    <option value="CA">California</option>
-                                                    <option value="NV">Nevada</option>
-                                                    <option value="OR">Oregon</option>
-                                                    <option value="WA">Washington</option>
-                                                    </optgroup>
-                                                    <optgroup label="Mountain Time Zone">
-                                                    <option value="AZ">Arizona</option>
-                                                    <option value="CO">Colorado</option>
-                                                    <option value="ID">Idaho</option>
-                                                    <option value="MT">Montana</option>
-                                                    <option value="NE">Nebraska</option>
-                                                    <option value="NM">New Mexico</option>
-                                                    <option value="ND">North Dakota</option>
-                                                    <option value="UT">Utah</option>
-                                                    <option value="WY">Wyoming</option>
-                                                    </optgroup>
-                                                    <optgroup label="Central Time Zone">
-                                                    <option value="AL">Alabama</option>
-                                                    <option value="AR">Arkansas</option>
-                                                    <option value="IL">Illinois</option>
-                                                    <option value="IA">Iowa</option>
-                                                    <option value="KS">Kansas</option>
-                                                    <option value="KY">Kentucky</option>
-                                                    <option value="LA">Louisiana</option>
-                                                    <option value="MN">Minnesota</option>
-                                                    <option value="MS">Mississippi</option>
-                                                    <option value="MO">Missouri</option>
-                                                    <option value="OK">Oklahoma</option>
-                                                    <option value="SD">South Dakota</option>
-                                                    <option value="TX">Texas</option>
-                                                    <option value="TN">Tennessee</option>
-                                                    <option value="WI">Wisconsin</option>
-                                                    </optgroup>
-                                                    <optgroup label="Eastern Time Zone">
-                                                    <option value="CT">Connecticut</option>
-                                                    <option value="DE">Delaware</option>
-                                                    <option value="FL">Florida</option>
-                                                    <option value="GA">Georgia</option>
-                                                    <option value="IN">Indiana</option>
-                                                    <option value="ME">Maine</option>
-                                                    <option value="MD">Maryland</option>
-                                                    <option value="MA">Massachusetts</option>
-                                                    <option value="MI">Michigan</option>
-                                                    <option value="NH">New Hampshire</option>
-                                                    <option value="NJ">New Jersey</option>
-                                                    <option value="NY">New York</option>
-                                                    <option value="NC">North Carolina</option>
-                                                    <option value="OH">Ohio</option>
-                                                    <option value="PA">Pennsylvania</option>
-                                                    <option value="RI">Rhode Island</option>
-                                                    <option value="SC">South Carolina</option>
-                                                    <option value="VT">Vermont</option>
-                                                    <option value="VA">Virginia</option>
-                                                    <option value="WV">West Virginia</option>
-                                                    </optgroup>
-                                                </select>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2 col-12">
-                                        <div class="form-group">
-                                            <label for="itemcost">Harga Satuan</label>
-                                            <input type="number" class="form-control hargabarang" id="hargabarang" aria-describedby="hargabarang" placeholder="100000" oninput="hitungTotalharga(this)" />
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2 col-12">
-                                        <div class="form-group">
-                                            <label for="jumlahbarang">Jumlah Barang</label>
-                                            <input type="number" class="form-control jumlahbarang" id="jumlahbarang" aria-describedby="jumlahbarang" placeholder="1" oninput="hitungTotalharga(this)" />
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2 col-12">
-                                        <div class="form-group">
-                                            <label for="totalharga">Total Harga</label>
-                                            <input type="text" readonly class="form-control-plaintext totalharga" id="totalharga" value="0" />
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-2 col-12 mb-50">
-                                        <div class="form-group">
-                                            <button type="button" class="btn btn-danger mb-2" data-repeater-delete title="Hapus"><span class="sr-only">Hapus</span><i class="fa fa-trash-o"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <hr />
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12">
-                                <button type="button" data-repeater-create class="btn btn-primary mb-2">
-                                    <i class="fa fa-plus-square"></i> <span>Tambah</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <div class="card">
+        <div class="card-header bg-white">
+            <div class="float-right">
+                <button type="button" class="btn btn-outline-primary mb-2 nextadd" data-toggle="modal" data-target=".modal-barang"><i class="fa fa-plus-circle"></i> Tambah</button>
+                <button type="button" class="btn btn-outline-secondary mb-2 savedraft"><i class="fa fa-save"></i> Simpan Draft</button>
+                <button type="button" class="btn btn-outline-success mb-2" onclick="ajukanBarang()">
+                    <i class="fa fa-send"></i> <span>Ajukan</span>
+                </button>
+            </div>
+            <h5 class="card-title py-2 m-0" >Pengajuan Pembelian Barang</h5>
+            <hr>
+            <div class="text-right">
+                Total Keseluruhan : <b>Rp. <span id="totalAll">0</span></b>
             </div>
         </div>
     </div>
+    <form method="post" class="invoice-repeater" id="form_ajukan_barang">
+        <div class="listholder d-flex flex-column-reverse" data-repeater-list="invoice">
+            <div class="card listItem" data-repeater-item style="display: none">
+                <div class="card-header bg-secondary text-white">
+                    <div class="float-right">
+                        <button type="button" class="btn btn-outline-light float-right ml-2" data-repeater-delete title="Hapus"><span class="sr-only">Hapus</span><i class="fa fa-close"></i></button>
+                        <button type="button" class="btn btn-outline-light float-right editbarang" title="Hapus"><span class="sr-only">Edit</span><i class="fa fa-pencil"></i></button>
+                    </div>
+                    <h6 class="m-0 py-2 text-uppercase itemName">Pulpen</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <p class="card-text m-2"><b>Sub Sub Kelmpok</b> : <span class="subkel"></span></p>
+                            <p class="card-text m-2"><b>Harga Maksimum</b> : Rp <span class="harga"></span> / <span class="satuan"></span></p>
+                        </div>
+                        <div class="col-md-5 mb-2">
+                            <div class="input-group input-group-sm mb-2">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Rp.</span>
+                                </div>
+                                <input type="text" class="form-control form-control-sm hargabarang numberdelimiter" aria-describedby="hargabarang" placeholder="Masukan Harga Barang Per Satuan" />
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control form-control-sm jumlahbarang" aria-describedby="jumlahbarang" placeholder="Masukan Jumlah Barang" oninput="hitungTotalharga(this)" />
+                                <div class="input-group-append">
+                                    <span class="input-group-text satuan">Box</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <b>TOTAL : <span class="totalharga"></span></b>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <div class="form-group pt-2">
+                                <label>Penyedia Barang :</label>
+                                <input type="text" class="form-control penyediabarang" placeholder="">
+                              </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-block btn-outline-primary"  data-repeater-create hidden></button>
+    </form>
+
 <!-- Modal Ajukan Barang -->
 <div class="modal fade" id="modalAjukanBarang" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -163,18 +95,27 @@
     </div>
 </div>
 
+@include('modules.pengajuan.partials.katalog', [
+    "modal_name" => "modal-barang",
+    "table_name" => "tblbarang",
+    "rowclick" => "addCart(this)",
+    "subsubkelompok" => $subsubkelompok,
+    "kelompok_barang" => $kelompok_barang,
+    "subkelompok" => $subkelompok,
+])
 
 @endsection
 @push('js')
 <script>
-    $("#namabarang").select2(
+    $("#namabarang").select2({
         theme: "bootstrap"
-    );
+    });
     $(function () {
-    'use strict';
         // form repeater
         $('.invoice-repeater, .repeater-default').repeater({
             show: function () {
+                insertData($(this))
+                $(".modal-barang").modal('hide')
                 $(this).slideDown();
             },
             hide: function (deleteElement) {
@@ -196,72 +137,69 @@
         });
     });
 
-    function hitungTotalharga(e) {
-      let listItem = e.closest(".listItem");
-      let hargaSatuan = parseFloat(listItem.querySelector(".hargabarang").value);
-      let jumlahBarang = parseInt(listItem.querySelector(".jumlahbarang").value);
-      let totalHarga = listItem.querySelector(".totalharga");
-
-      let total = hargaSatuan * jumlahBarang;
-      totalHarga.value = total;
+    let selectedItem = null;
+    function addCart(e){
+        let row = $(e).closest('tr');
+        selectedItem = dt_tblbarang.row(row).data()
+        let len = $('.listItem[data-repeater-item]').length
+        if(len === 1 && $('.listItem[data-repeater-item]:first-child').is(":hidden")){
+            $('.listItem[data-repeater-item]').remove();
+            $("div.nextadd").show()
+            $("div.firstadd").hide()
+        }
+        $('[data-repeater-create]').click()
     }
 
-    function ajukanBarang() {
-      let items = document.querySelectorAll(".listItem");
-      let dataModal = document.getElementById("dataModal");
-
-      dataModal.innerHTML = "";
-
-      items.forEach(function(item, index) {
-        let namaBarang = item.querySelector(".namabarang").value;
-        let hargaSatuan = item.querySelector(".hargabarang").value;
-        let jumlahBarang = item.querySelector(".jumlahbarang").value;
-        let total = item.querySelector(".totalharga").value;
-
-        let dataItem = document.createElement("tr");
-        dataItem.innerHTML = "<td>" + (index + 1) + "</td><td> " + namaBarang + "</td><td> " + hargaSatuan + "</td><td>" + jumlahBarang + "</td><td>" + total + "</td>"
-        dataModal.appendChild(dataItem);
-      });
-
-      $('#modalAjukanBarang').modal('show');
+    function insertData(elm){
+        elm.find('.itemName').html(selectedItem.uraian)
+        elm.find('.subkel').html(selectedItem.subsubkelompok)
+        elm.find('.harga').html(selectedItem.harga_maksimum)
+        elm.find('.satuan').html(selectedItem.satuan)
     }
 
-    function kirimPengajuan() {
-        let items = document.querySelectorAll(".listItem");
-        let dataToSend = [];
+    $('#form_ajukan_barang .listholder').on({
+    focusout:function(){
+        let val = $(this).val()
+        if(!isNaN(parseInt(val.replaceAll('.','')))){
+            $(this).val(numberWithCommas(val))
+        }
+    },
+    focusin:function(){
+        let val = $(this).val()
+        $(this).val(val.replaceAll('.',''))
+    }
+    },'.numberdelimiter');
 
-        items.forEach(function(item) {
-            let namaBarang = item.querySelector(".namabarang").value;
-            var hargaSatuan = parseFloat(item.querySelector(".hargabarang").value);
-            var jumlahBarang = parseInt(item.querySelector(".jumlahbarang").value);
-            let totalHarga = item.querySelector(".totalharga").value;
-
-            dataToSend.push({
-                namabarang: namaBarang,
-                hargabarang: hargaSatuan,
-                jumlahbarang: jumlahBarang,
-                totalharga: totalHarga
-            });
-        });
-        console.log(JSON.stringify(dataToSend));
-
-        swal("Sukses", "Barang telah diajukan", "success");
-
-        $('#modalAjukanBarang').modal('hide');
-
-        // $.ajax({
-        //     type: "POST",
-        //     url: "pengajuanbarang",
-        //     data: JSON.stringify(dataToSend),
-        //     contentType: "application/json",
-        //     success: function(res) {
-        //         console.log(res);
-        //     },
-        //     error: function(err) {
-        //         console.error(err);
-        //     }
-        // });
+    function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     }
 
+    function hitungTotalharga(e){
+        let val = parseInt($(e).val());
+        let item = $(e).closest('.listItem[data-repeater-item]');
+        let harga = parseInt(item.find('input.hargabarang').val().replaceAll('.',''))
+        if(!isNaN(val) && !isNaN(harga)){
+            item.find(".totalharga").html(`Rp. ${numberWithCommas(harga*val)}`)
+            calculateAll()
+        } else {
+            item.find(".totalharga").html("Tidak dapat diproses, cek inputan anda")
+        }
+    }
+
+    function calculateAll(){
+        let hargas = [];
+        $('.listItem[data-repeater-item]').each(function(){
+            let thisharga = $(this).find(".totalharga").html();
+            console.log("this harga :",thisharga)
+            let theInt = thisharga.replace('Rp.', '').replaceAll('.','')
+            if(!isNaN(parseInt(theInt))){
+                hargas.push(parseInt(theInt))
+            }
+        })
+        let sum = hargas.reduce((accumulator, currentValue) => {
+            return accumulator + currentValue
+        },0);
+        $("#totalAll").html(numberWithCommas(sum));
+    }
 </script>
 @endpush

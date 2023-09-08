@@ -6,26 +6,12 @@
             <div class="card">
                 <div class="body">
                     <div class="list-group list-widget">
-                        <a href="javascript:void(0);" class="list-group-item text-muted">
-                            <span class="badge badge-success">654</span>
-                            Gudang Bidang 1
-                        </a>
-                        <a href="javascript:void(0);" class="list-group-item text-muted">
-                            <span class="badge badge-success">654</span>
-                            Gudang Bidang 2
-                        </a>
-                        <a href="javascript:void(0);" class="list-group-item text-muted">
-                            <span class="badge badge-success">654</span>
-                            Gudang Bidang 3
-                        </a>
-                        <a href="javascript:void(0);" class="list-group-item text-muted">
-                            <span class="badge badge-success">654</span>
-                            Gudang Bidang 4
-                        </a>
-                        <a href="javascript:void(0);" class="list-group-item text-muted">
-                            <span class="badge badge-success">654</span>
-                            Gudang Bidang 5
-                        </a>
+                        @foreach ($gudang as $g )
+                            <a href="javascript:void(0);" class="list-group-item text-muted">
+                                <span class="badge badge-success">654</span>
+                                {{$g->nama_gudang}}
+                            </a>
+                        @endforeach
                     </div>
                 </div>
             </div>

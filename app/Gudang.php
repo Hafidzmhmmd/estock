@@ -4,14 +4,14 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SubSubKelompok extends Model
+class Gudang extends Model
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'm_sub_subkel_barang';
+    protected $table = 'gudang';
     /**
      * The primary key associated with the table.
      *

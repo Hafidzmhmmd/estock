@@ -123,6 +123,10 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    'akses' => [
+        'gudangall' => [2]
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers
