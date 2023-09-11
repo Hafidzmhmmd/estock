@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\BidangBarang;
 use App\KelompokBarang;
 use App\SubKelompok;
 use App\SubSubKelompok;
 use App\Barang;
+use App\StockGudang;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -46,5 +49,23 @@ class DataController extends Controller
             }
         })
         ->toJson();
+    }
+
+    public function stockgudangDataTables(Request $request){
+        $user = Auth::user();
+        $gudang_id = $request->gudang_id;
+        if(empty($gudang_id)){
+            if(in_array($user->role,config('app.akses.gudangall'))){
+                $data = DB::table('stock_gudang')->leftJoin('m_barang','stock_gudang.barang_id','=','m_barang.id');
+            }
+        } else {
+            $data = DB::table('stock_gudang')->leftJoin('m_barang','stock_gudang.barang_id','=','m_barang.id')
+            ->where('gudang_id', $gudang_id);
+        }
+        if(isset($data)){
+            return Datatables::of($data)->toJson();
+        } else {
+            return null;
+        }
     }
 }

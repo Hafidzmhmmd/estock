@@ -12,8 +12,11 @@ class GudangController extends Controller
     {
         $gudang = Gudang::select('*');
         $user = Auth::user();
+        $data['pengelolaGudang'] = false;
         if(!in_array($user->role,config('app.akses.gudangall'))){
             $gudang = $gudang->where('bidang_id', $user->bidang);
+        } else {
+            $data['pengelolaGudang'] = true;
         }
         $data['gudang'] = $gudang->get();
         return view('modules.gudang.index',$data);
