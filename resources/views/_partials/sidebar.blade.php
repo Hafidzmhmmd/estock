@@ -14,6 +14,9 @@
                     <ul>
                         <li><a href="{{route('pengajuan.pembelian')}}">Pembelian Baru</a></li>
                     </ul>
+                    <ul>
+                        <li><a href="{{route('pengajuan.daftarpembelian')}}">Daftar Pembelian</a></li>
+                    </ul> 
                 </li>
                 <li><a href="{{route('gudang.index')}}"><i class="icon-grid"></i><span>Gudang</span></a></li>
                 <li><a href="#uiElements" class="has-arrow"><i class="icon-folder-alt"></i><span>Laporan</span></a>
