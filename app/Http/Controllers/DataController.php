@@ -8,6 +8,9 @@ use App\KelompokBarang;
 use App\SubKelompok;
 use App\SubSubKelompok;
 use App\Barang;
+use App\Pengajuan;
+use App\PengajuanDetail;
+use Illuminate\Support\Facades\Auth;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -46,5 +49,16 @@ class DataController extends Controller
             }
         })
         ->toJson();
+    }
+
+    public function pengajuanDataTables(Request $request){
+        $user = Auth::user();
+        $data = Pengajuan::where('id_pemohon', $user->id)->get();
+        return Datatables::of($data)->toJson();
+    }
+
+    public function pengajuandetailDataTables(Request $request){ 
+        $data = PengajuanDetail::where('draftcode', $request->draftcode)->get();  
+        return Datatables::of($data)->toJson();
     }
 }
