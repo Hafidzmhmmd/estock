@@ -9,9 +9,13 @@ use App\Pengajuan;
 use App\PengajuanDetail;
 use App\SubKelompok;
 use App\SubSubKelompok;
+use App\Gudang;
+use App\StockGudang;
+use App\Http\Helpers\RiwayatHelpers;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class PengajuanController extends Controller
 {
@@ -19,9 +23,9 @@ class PengajuanController extends Controller
     {
         $data['subsubkelompok'] = SubSubKelompok::all();
         $data['kelompok_barang'] = KelompokBarang::all();
-        $data['subkelompok'] = SubKelompok::all(); 
+        $data['subkelompok'] = SubKelompok::all();
         $data['pengajuan'] = null;
-        $data['pengajuan_detail'] = null;  
+        $data['pengajuan_detail'] = null;
 
         return view('modules.pengajuan.pembelian',$data);
     }
@@ -30,12 +34,12 @@ class PengajuanController extends Controller
     {
         $data['subsubkelompok'] = SubSubKelompok::all();
         $data['kelompok_barang'] = KelompokBarang::all();
-        $data['subkelompok'] = SubKelompok::all(); 
+        $data['subkelompok'] = SubKelompok::all();
         $data['pengajuan'] = Pengajuan::where('draftcode', $draftcode)->first();
-        $data['pengajuan_detail'] = PengajuanDetail::where('draftcode', $draftcode)->get();  
-        if ($data['pengajuan']){ 
+        $data['pengajuan_detail'] = PengajuanDetail::where('draftcode', $draftcode)->get();
+        if ($data['pengajuan']){
             return view('modules.pengajuan.pembelian',$data);
-        } else { 
+        } else {
             return redirect()->route('pengajuan.pembelian');
         }
     }
@@ -45,12 +49,12 @@ class PengajuanController extends Controller
         $user = Auth::user();
 
         if($request->draftcode != '') {
-            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first(); 
-            $draftcode = $request->draftcode; 
+            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
+            $draftcode = $request->draftcode;
         } else {
             $dtPengajuan = new Pengajuan();
             $draftcode = Str::random(6);
-        }  
+        }
         $dtPengajuan->id_pemohon = $user->id;
         $dtPengajuan->bidang = $user->bidang;
         $dtPengajuan->status = 'D';
@@ -58,9 +62,9 @@ class PengajuanController extends Controller
         $dtPengajuan->total_keseluruhan = $request->total_keseluruhan;
         $dtPengajuan->draftcode = strtoupper($draftcode);
 
-        if ($request->detail) { 
+        if ($request->detail) {
             $details = json_decode($request->detail, true);
-            
+
             if (json_last_error() != JSON_ERROR_NONE) {
                 return response()->json([
                     'status' => 'error',
@@ -84,7 +88,7 @@ class PengajuanController extends Controller
                 $dtDetail->harga_satuan = $dt['hargaBarang'];
                 $dtDetail->jumlah_barang = $dt['jumlahBarang'];
                 $dtDetail->total_harga = $dt['totalHarga'];
-                $dtDetail->penyedia_barang = $dt['penyediaBarang']; 
+                $dtDetail->penyedia_barang = $dt['penyediaBarang'];
                 $dtDetail->save();
             }
 
@@ -92,28 +96,28 @@ class PengajuanController extends Controller
                 'draftcode' => $dtPengajuan->draftcode,
                 'status' => true,
                 'message' => 'Data berhasil disimpan'
-            ]); 
+            ]);
         }
         else {
             return response()->json([
                 'status' => false,
                 'message' => 'Gagal menyimpan data'
             ]);
-        } 
+        }
     }
 
     public function ajukan(Request $request)
-    { 
+    {
         if($request->draftcode != '') {
-            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();  
+            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
             $dtPengajuan->status = 'P';
             $dtPengajuan->tgl_pengajuan = new DateTime();
 
             if($dtPengajuan->save()) {
-                return response()->json([ 
+                return response()->json([
                     'status' => true,
                     'message' => 'Pengajuan berhasil'
-                ]); 
+                ]);
             } else {
                 return response()->json([
                     'status' => false,
@@ -124,17 +128,56 @@ class PengajuanController extends Controller
     }
 
     public function setujuiPengajuan(Request $request)
-    { 
+    {
         if($request->draftcode != '') {
-            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();  
-            $dtPengajuan->status = 'A';
-            $dtPengajuan->tgl_disetujui = new DateTime();
+            $tr = DB::transaction(function() use($request) {
+                $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
+                $dtPengajuan->status = 'A';
+                $dtPengajuan->tgl_disetujui = new DateTime();
 
-            if($dtPengajuan->save()) {
-                return response()->json([ 
+                $gudangid = Gudang::where('bidang_id', $dtPengajuan->bidang)->pluck('id')->first();
+                $datapengajuan = PengajuanDetail::where('draftcode', $request->draftcode)->get();
+                foreach ($datapengajuan as $data){
+                    $before = 0;
+                    $row = StockGudang::where('gudang_id', $gudangid)->where('barang_id', $data->id_barang);
+                    if($row->count()){
+                        $row = $row->first();
+                        $before = $row->rencana;
+                        $after = intval($before) + intval($data->jumlah_barang);
+                        $row->rencana = $after;
+                        $row->save();
+                    }
+                    else
+                    {
+                        $row = new StockGudang;
+                        $row->gudang_id = $gudangid;
+                        $row->barang_id = $data->id_barang;
+                        $after = $data->jumlah_barang;
+                        $row->rencana = $after;
+                        $row->stock = 0;
+                        $row->save();
+                    }
+                    RiwayatHelpers::accPembelian((object)[
+                        'stock_id' => $row->stock_id,
+                        'jumlah' => $data->jumlah_barang,
+                        'before' => $before,
+                        'after' => $after,
+                        'draftcode' => $request->draftcode
+                    ]);
+                }
+
+                if($dtPengajuan->save()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            });
+
+            if($tr){
+                return response()->json([
                     'status' => true,
                     'message' => 'Berhasil menyetujui pengajuan'
-                ]); 
+                ]);
             } else {
                 return response()->json([
                     'status' => false,
@@ -145,17 +188,17 @@ class PengajuanController extends Controller
     }
 
     public function tolakPengajuan(Request $request)
-    { 
+    {
         if($request->draftcode != '') {
-            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();  
+            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
             $dtPengajuan->status = 'C';
             $dtPengajuan->tgl_disetujui = new DateTime();
 
             if($dtPengajuan->save()) {
-                return response()->json([ 
+                return response()->json([
                     'status' => true,
                     'message' => 'Berhasil menolak pengajuan'
-                ]); 
+                ]);
             } else {
                 return response()->json([
                     'status' => false,
@@ -165,16 +208,16 @@ class PengajuanController extends Controller
         }
     }
 
-    public function hapusdraft($draftcode){ 
-        
+    public function hapusdraft($draftcode){
+
         if ($draftcode) {
             $delPengajuan = Pengajuan::where('draftcode', $draftcode)
                     ->where('status','D')
                     ->delete();
 
-            if($delPengajuan) { 
-                $delPengajuan = PengajuanDetail::where('draftcode', $draftcode)->delete(); 
-                $message = 'Draft Pengajuan berhasil dihapus';  
+            if($delPengajuan) {
+                $delPengajuan = PengajuanDetail::where('draftcode', $draftcode)->delete();
+                $message = 'Draft Pengajuan berhasil dihapus';
                 $result = [
                     'status' => true,
                     'message' => $message
@@ -182,21 +225,21 @@ class PengajuanController extends Controller
                 return response()->json($result,200);
 
             } else {
-                $message = 'Gagal menghapus draft';  
+                $message = 'Gagal menghapus draft';
                 $result = [
                     'status' => false,
                     'message' => $message
                 ];
                 return response()->json($result,200);
             }
-           
+
         } else {
             return response()->json([
                 'status' => false,
                 'message' => 'bad request'
             ]);
         }
-        
+
     }
 
     public function daftarpembelian()

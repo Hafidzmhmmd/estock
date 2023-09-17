@@ -127,6 +127,13 @@ return [
         'gudangall' => [2]
     ],
 
+    'flow' => [
+        'rencana' => 1,
+        'stock' => 2,
+        'keluar' => 3,
+        'batal' => 0
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Autoloaded Service Providers

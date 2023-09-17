@@ -18,4 +18,9 @@ class StockGudang extends Model
      * @var string
      */
     protected $primaryKey = 'stock_id';
+
+    public function hasBarang()
+    {
+        return $this->belongsTo('App\Barang', 'barang_id', 'id');
+    }
 }

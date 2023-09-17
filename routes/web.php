@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::prefix('gudang')->name('gudang.')->group(function () {
         Route::get('/', 'GudangController@index')->name('index');
+        Route::post('/', 'GudangController@takeout')->name('takeout');
     });
 
     Route::prefix('data')->name('data.')->group(function () {
