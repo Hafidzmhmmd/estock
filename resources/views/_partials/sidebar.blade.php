@@ -1,4 +1,10 @@
-@php use App\Helpers\MenuBuilder; @endphp
+@php
+use App\Http\Helpers\MenuHelpers;
+use Illuminate\Support\Facades\Route;
+
+$permissions = MenuHelpers::Permissions();
+$currentRoute = Route::currentRouteName();
+@endphp
 
 
 <div id="left-sidebar" class="sidebar">
@@ -9,28 +15,27 @@
     <div class="sidebar-scroll">
         <nav id="left-sidebar-nav" class="sidebar-nav mt-3">
             <ul id="main-menu" class="metismenu">
-                <li class="active"><a href="/"><i class="icon-home"></i><span>Dashboard</span></a></li>
-                <li><a href="#uiElements" class="has-arrow"><i class="icon-energy"></i><span>Pengajuan</span></a>
-                    <ul>
-                        <li><a href="{{route('pengajuan.pembelian')}}">Pembelian Baru</a></li>
-                    </ul>
-                    <ul>
-                        <li><a href="{{route('pengajuan.daftarpembelian')}}">Daftar Pembelian</a></li>
-                    </ul> 
-                </li>
-                <li><a href="{{route('gudang.index')}}"><i class="icon-grid"></i><span>Gudang</span></a></li>
-                <li><a href="#uiElements" class="has-arrow"><i class="icon-folder-alt"></i><span>Laporan</span></a>
-                    <ul>
-                        <li><a href="ui-card.html">Pembelian</a></li>
-                        <li><a href="ui-card.html">Opname Stock</a></li>
-                    </ul>
-                </li>
-                <li><a href="#uiElements" class="has-arrow"><i class="icon-settings"></i><span>Pengaturan</span></a>
-                    <ul>
-                        <li><a href="{{route('data.barang')}}">Barang</a></li>
-                        <li><a href="ui-card.html">Opname Stock</a></li>
-                    </ul>
-                </li>
+                @foreach ($permissions as $key=>$value)
+                    @if (is_array($value))
+                        @php
+                            $vals = array_values($value);
+                            $active = in_array($currentRoute, $vals) ? 'active' : '';
+                        @endphp
+                        <li class="{{$active}}"><a href="#uiElements" class="has-arrow"><i class="icon-energy"></i><span>{{$key}}</span></a><ul>
+                        @foreach ($value as $menu=>$route)
+                            @php
+                                $active = $route == $currentRoute ? 'active' : ''
+                            @endphp
+                            <li class="{{$active}}"><a href="{{route($route)}}">{{$menu}}</a></li>
+                        @endforeach
+                        </ul></li>
+                    @else
+                        @php
+                            $active = $value == $currentRoute ? 'active' : ''
+                        @endphp
+                        <li class="{{$active}}"><a href="{{route($value)}}"><i class="icon-home"></i><span>{{$key}}</span></a></li>
+                    @endif
+                @endforeach
             </ul>
         </nav>
     </div>

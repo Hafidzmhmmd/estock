@@ -249,4 +249,55 @@ class PengajuanController extends Controller
         $data['subkelompok'] = SubKelompok::all();
         return view('modules.pengajuan.daftarpembelian',$data);
     }
+
+    public function konfirmasiBeli(Request $request)
+    {
+        $payload = [
+            'status' => false,
+            'msg' => 'draft permintaan tidak ditemukan'
+        ];
+        if($request->draftcode != '') {
+            $payload = DB::transaction(function() use($request, $payload) {
+                $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
+                if($dtPengajuan->status == 'A'){
+                    $dtPengajuan->status = 'F';
+                    $dtPengajuan->tgl_konfirmasibeli = new DateTime();
+
+                    $gudangid = Gudang::where('bidang_id', $dtPengajuan->bidang)->pluck('id')->first();
+                    $datapengajuan = PengajuanDetail::where('draftcode', $request->draftcode)->get();
+                    foreach ($datapengajuan as $data){
+                        $before = 0;
+                        $row = StockGudang::where('gudang_id', $gudangid)->where('barang_id', $data->id_barang);
+                        if($row->count()){
+                            $row = $row->first();
+                            $before = $row->rencana;
+                            if($before > 0){
+                                $after = intval($before) - intval($data->jumlah_barang);
+                                $row->rencana = $after < 0 ? 0 : $after;
+                                $row->stock = $row->stock + intval($data->jumlah_barang);
+                                $row->save();
+                            } else {
+                                $payload['msg'] = 'stock yang anda minta tidak memiliki rencana pembelian';
+                            }
+                        } else {
+                            $payload['msg'] = 'data stock tidak ditemukan';
+                        }
+                    }
+
+                    if($dtPengajuan->save()) {
+                        $payload['status'] = true;
+                        $payload['msg'] = 'berhasil menkonfirmasi pembelian';
+                    } else {
+                        $payload['msg'] = 'gagal memproses permintaan';
+                    }
+                }
+                else
+                {
+                    $payload['msg'] = 'tidak dapat menkofirmasi perimtaan ini';
+                }
+                return $payload;
+            });
+        }
+        return response()->json($payload);
+    }
 }

@@ -15,7 +15,7 @@ Route::get('/login', 'AuthController@login')->name('login');
 Route::get('/logout', 'AuthController@logout')->name('logout');
 Route::post('/dologin', 'AuthController@doLogin')->name('dologin');
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['access'])->group(function () {
     Route::get('/', 'DashboardController@index')->name('dashboard');
 
     Route::prefix('pengajuan')->name('pengajuan.')->group(function () {
@@ -27,6 +27,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('tolakpengajuan/{draftcode}', 'PengajuanController@tolakpengajuan')->name('tolakpengajuan');
         Route::delete('hapusdraft/{draftcode}', 'PengajuanController@hapusdraft')->name('hapusdraft');
         Route::get('daftarpembelian', 'PengajuanController@daftarpembelian')->name('daftarpembelian');
+        Route::post('konfirmasiBeli', 'PengajuanController@konfirmasiBeli')->name('konfirmasiBeli');
     });
 
     Route::prefix('gudang')->name('gudang.')->group(function () {

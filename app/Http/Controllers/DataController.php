@@ -55,7 +55,15 @@ class DataController extends Controller
 
     public function pengajuanDataTables(Request $request){
         $user = Auth::user();
-        $data = Pengajuan::where('id_pemohon', $user->id)->get();
+        $data = Pengajuan::select('*');
+        if($request->level == 1){
+            $data = $data->where('bidang', $user->bidang);
+        }
+        else if ($request->level == 2){
+            $data = $data->whereIn('status', ['A','P','F']);
+        } else {
+            $data = $data->where('id_pemohon', $user->id);
+        }
         return Datatables::of($data)->toJson();
     }
 

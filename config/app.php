@@ -124,7 +124,9 @@ return [
     'cipher' => 'AES-256-CBC',
 
     'akses' => [
-        'gudangall' => [2]
+        'gudangall' => [3],
+        'pemohon' => [1],
+        'ppk' => [2],
     ],
 
     'flow' => [
@@ -132,6 +134,14 @@ return [
         'stock' => 2,
         'keluar' => 3,
         'batal' => 0
+    ],
+
+    'pengajuanStatus' => [
+        'D' => 'Draft',
+        'P' => 'Pengajuan Baru',
+        'A' => 'Pengajuan Disetujui PPK',
+        'C' => 'Pengajuan Ditolak',
+        'F' => 'Pengajuan Selesai'
     ],
 
     /*
