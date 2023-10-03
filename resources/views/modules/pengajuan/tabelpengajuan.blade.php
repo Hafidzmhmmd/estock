@@ -134,6 +134,8 @@
                             return `<span class="badge badge-success">Proses Pembelian</span>`;
                         case 'C':
                             return `<span class="badge badge-danger">Ditolak</span>`;
+                        case 'F':
+                            return `<span class="badge badge-success">Selesai</span>`;
                         default :
                             return `<span class="badge badge-primary">${data}</span>`;
                         }
@@ -203,12 +205,19 @@
             let status =  $(this).data('status');
             let tglSetujui =  $(this).data('tgl-setujui');
 
+            $('.tolakPengajuan').hide();
+            $('.setujuiPengajuan').hide();
+            $('.konfirmasiPembelian').hide();
             if(status == 'A') {
                 $('#tglsetujui-text').html(`Tanggal Disetujui : <b><span>` + tglSetujui + `</span></b>`)
+                $('.konfirmasiPembelian').show();
             } else if (status == 'C') {
                 $('#tglsetujui-text').html(`Tanggal Ditolak : <b><span>` + tglSetujui + `</span></b>`)
             } else if (status == 'F') {
                 $('#tglsetujui-text').html(`Tanggal Konfirmasi Pembelian : <b><span>` + tglSetujui + `</span></b>`)
+            } else {
+                $('.tolakPengajuan').show();
+                $('.setujuiPengajuan').show();
             }
 
             $('#draftcode').html(draftcode);
