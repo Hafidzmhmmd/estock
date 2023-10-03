@@ -57,7 +57,7 @@ class DataController extends Controller
         $user = Auth::user();
         $data = Pengajuan::select('*');
         if($request->level == 1){
-            $data = $data->where('bidang', $user->bidang);
+            $data = $data->where('bidang', $user->bidang)->whereIn('status', ['A','P','F','C']);
         }
         else if ($request->level == 2){
             $data = $data->whereIn('status', ['A','P','F']);

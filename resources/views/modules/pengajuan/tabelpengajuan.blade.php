@@ -97,9 +97,9 @@
         serverSide: true,
         "ajax": {
             "url": "{{ route('data.pengajuanDataTables') }}",
-            @if (isset($level) && $level)
+            @if (isset($slevel) && $slevel)
                 data: function(d) {
-                    d.level = {{$level}};
+                    d.level = {{$slevel}};
                 }
             @endif
         },
