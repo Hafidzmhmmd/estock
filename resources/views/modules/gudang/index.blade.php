@@ -39,7 +39,7 @@
                 <div class="card-body">
                     <ul class="nav nav-tabs">
                         <li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#list-barang">Stock
-                                Gundang</a></li>
+                                Gudang</a></li>
                         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#riwayat">Riwayat</a></li>
                         @if ($pengelolaGudang)
                             <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#transfer">Transfer Stock</a>
