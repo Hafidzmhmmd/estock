@@ -11,11 +11,14 @@ use App\SubKelompok;
 use App\SubSubKelompok;
 use App\Gudang;
 use App\StockGudang;
+use App\Flow;
 use App\Http\Helpers\RiwayatHelpers;
 use DateTime;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use App\Http\Helpers\FlowHelpers;
+use Illuminate\Support\Facades\Storage;
 
 class PengajuanController extends Controller
 {
@@ -53,12 +56,26 @@ class PengajuanController extends Controller
             $draftcode = $request->draftcode;
         } else {
             $dtPengajuan = new Pengajuan();
-            $draftcode = Str::random(6);
+            $draftcode = null;
+            $find = true;
+            while($find){
+                $draftcode = Str::random(6);
+                $exist = Pengajuan::where('draftcode', $draftcode)->count();
+                if(!$exist){
+                    $find = false;
+                }
+            }
+
         }
         $dtPengajuan->id_pemohon = $user->id;
         $dtPengajuan->bidang = $user->bidang;
-        $dtPengajuan->status = 'D';
-        $dtPengajuan->tgl_pengajuan = new DateTime();
+        $firstFlow = Flow::where('step',1)->first();
+        $dtPengajuan->flow = $firstFlow->id;
+        $dtPengajuan->status = $firstFlow->status;
+        if(isset($request->ajukan) && $request->ajukan == 1){
+            $dtPengajuan->status = 'P';
+            $dtPengajuan->tgl_pengajuan = new DateTime();
+        }
         $dtPengajuan->total_keseluruhan = $request->total_keseluruhan;
         $dtPengajuan->draftcode = strtoupper($draftcode);
 
@@ -88,8 +105,10 @@ class PengajuanController extends Controller
                 $dtDetail->harga_satuan = $dt['hargaBarang'];
                 $dtDetail->jumlah_barang = $dt['jumlahBarang'];
                 $dtDetail->total_harga = $dt['totalHarga'];
-                $dtDetail->penyedia_barang = $dt['penyediaBarang'];
                 $dtDetail->save();
+            }
+            if(isset($request->ajukan) && $request->ajukan == 1){
+                FlowHelpers::nextFlow($draftcode);
             }
 
             return response()->json([
@@ -130,50 +149,24 @@ class PengajuanController extends Controller
     public function setujuiPengajuan(Request $request)
     {
         if($request->draftcode != '') {
-            $tr = DB::transaction(function() use($request) {
-                $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
-                $dtPengajuan->status = 'A';
-                $dtPengajuan->tgl_disetujui = new DateTime();
-
-                $gudangid = Gudang::where('bidang_id', $dtPengajuan->bidang)->pluck('id')->first();
-                $datapengajuan = PengajuanDetail::where('draftcode', $request->draftcode)->get();
-                foreach ($datapengajuan as $data){
-                    $before = 0;
-                    $row = StockGudang::where('gudang_id', $gudangid)->where('barang_id', $data->id_barang);
-                    if($row->count()){
-                        $row = $row->first();
-                        $before = $row->rencana;
-                        $after = intval($before) + intval($data->jumlah_barang);
-                        $row->rencana = $after;
-                        $row->save();
-                    }
-                    else
-                    {
-                        $row = new StockGudang;
-                        $row->gudang_id = $gudangid;
-                        $row->barang_id = $data->id_barang;
-                        $after = $data->jumlah_barang;
-                        $row->rencana = $after;
-                        $row->stock = 0;
-                        $row->save();
-                    }
-                    RiwayatHelpers::accPembelian((object)[
-                        'stock_id' => $row->stock_id,
-                        'jumlah' => $data->jumlah_barang,
-                        'before' => $before,
-                        'after' => $after,
-                        'draftcode' => $request->draftcode
-                    ]);
+            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
+            $flow = Flow::find($dtPengajuan->flow);
+            if($flow->input_penyedia == 1){
+                $dtPengajuan->nama_penyedia = $request->nama_penyedia;
+                if($request->file('faktur') != null){
+                    $file = $request->file('faktur');
+                    $ext = $file->getClientOriginalExtension();
+                    $filename = "$request->draftcode.$ext";
+                    $path = "faktur/$filename";
+                    Storage::disk('local')->put($path, file_get_contents($file));
+                    $dtPengajuan->faktur = $path;
                 }
+                $dtPengajuan->save();
+            }
 
-                if($dtPengajuan->save()) {
-                    return true;
-                } else {
-                    return false;
-                }
-            });
 
-            if($tr){
+            $flow = FlowHelpers::nextFlow($request->draftcode);
+            if($flow->next){
                 return response()->json([
                     'status' => true,
                     'message' => 'Berhasil menyetujui pengajuan'
@@ -181,7 +174,7 @@ class PengajuanController extends Controller
             } else {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Terjadi kesalahan'
+                    'message' => $flow->err
                 ]);
             }
         }
@@ -190,11 +183,8 @@ class PengajuanController extends Controller
     public function tolakPengajuan(Request $request)
     {
         if($request->draftcode != '') {
-            $dtPengajuan = Pengajuan::where('draftcode', $request->draftcode)->first();
-            $dtPengajuan->status = 'C';
-            $dtPengajuan->tgl_disetujui = new DateTime();
-
-            if($dtPengajuan->save()) {
+            $flow = FlowHelpers::decline($request->draftcode);
+            if($flow->next) {
                 return response()->json([
                     'status' => true,
                     'message' => 'Berhasil menolak pengajuan'
@@ -202,7 +192,7 @@ class PengajuanController extends Controller
             } else {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Terjadi kesalahan'
+                    'message' => $flow->err
                 ]);
             }
         }

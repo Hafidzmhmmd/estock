@@ -127,6 +127,7 @@ return [
         'gudangall' => [3],
         'pemohon' => [1],
         'ppk' => [2],
+        'ppspm' => [6],
     ],
 
     'flow' => [

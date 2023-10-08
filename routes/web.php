@@ -42,4 +42,6 @@ Route::middleware(['access'])->group(function () {
         Route::get('pengajuandetailDataTables', 'DataController@pengajuandetailDataTables')->name('pengajuandetailDataTables');
         Route::get('stockgudangDataTables', 'DataController@stockgudangDataTables')->name('stockgudangDataTables');
     });
+
+    Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');
 });

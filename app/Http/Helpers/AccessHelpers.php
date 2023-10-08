@@ -22,4 +22,10 @@ class AccessHelpers {
         $user = Auth::user();
         return in_array($user->role,config('app.akses.gudangall'));
     }
+
+    public static function isPPSPM() : bool
+    {
+        $user = Auth::user();
+        return in_array($user->role,config('app.akses.ppspm'));
+    }
 }

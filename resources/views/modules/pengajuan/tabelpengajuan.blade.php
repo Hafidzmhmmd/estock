@@ -1,7 +1,6 @@
 @php
     use App\Http\Helpers\AccessHelpers;
 @endphp
-
 <div class="card">
     <div class="header">
         <div class="float-right pr-2">
@@ -46,10 +45,32 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div><p>Tanggal Pengajuan : <b><span id="tgl-pengajuan"></span></b></p>
-                    <p id="tglsetujui-text"></p>
-                    <p>Total Keseluruhan : <b><span id="total-keseluruhan"></span></b></p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div>
+                            <p>Tanggal Pengajuan : <b><span id="tgl-pengajuan"></span></b></p>
+                            <p id="tglsetujui-text"></p>
+                            <p>Total Keseluruhan : <b><span id="total-keseluruhan"></span></b></p>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="field-penyedia" data-req='false'>
+                        <div class="form-group">
+                            <label>Penyedia Barang : </label>
+                            <input class="form-control form-control-sm" id="nama_penyedia" type="text">
+                        </div>
+                        <label>Faktur Pembelian : </label>
+                        <div class="input-group mb-3">
+                            <div class="input-group-prepend">
+                                <button class="btn btn-outline-secondary pdfviewer" type="button" data-path=''><i class="fa fa-eye"></i></button>
+                            </div>
+                            <div class="custom-file">
+                                <input type="file" class="custom-file-input" id="faktur_pembeilian">
+                                <label class="custom-file-label" for="faktur_pembeilian">Choose file</label>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
                 <hr>
                 <div class="table-responsive">
                     <table class="table table-hover center-aligned-table" id="tblPengajuanDetail" style="width:100%">
@@ -62,7 +83,6 @@
                                 <th>Harga Maksimum</th>
                                 <th>Harga Satuan</th>
                                 <th>Total Harga</th>
-                                <th>Penyedia Barang</th>
                             </tr>
                             </thead>
                         <tbody>
@@ -70,22 +90,14 @@
                     </table>
                 </div>
             </div>
-            @if (AccessHelpers::isPPK())
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-danger mb-2 tolakPengajuan">
-                        <i class="fa fa-ban"></i> <span>Tolak</span>
-                    </button>
-                    <button type="button" class="btn btn-outline-success mb-2 setujuiPengajuan">
-                        <i class="fa fa-check"></i> <span>Setujui</span>
-                    </button>
-                </div>
-            @elseif (AccessHelpers::isPemohon() || AccessHelpers::isPengelolaBMN())
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-success mb-2 konfirmasiPembelian">
-                        <i class="fa fa-check"></i> <span>Konfirmasi Pembelian</span>
-                    </button>
-                </div>
-            @endif
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-danger mb-2 tolakPengajuan" data-draftcode="">
+                    <i class="fa fa-ban"></i> <span>Tolak</span>
+                </button>
+                <button type="button" class="btn btn-outline-success mb-2 setujuiPengajuan" data-draftcode="">
+                    <i class="fa fa-check"></i> <span>Lanjutkan</span>
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -124,20 +136,20 @@
             },
             {
                 data: 'status',
-                        render: function(data) {
+                        render: function(data, type, full, meta) {
                         switch (data) {
                         case 'D':
-                            return `<span class="badge badge-default">Draft</span>`;
+                            return `<span class="badge badge-default">${full.flow_name}</span>`;
                         case 'P':
-                            return `<span class="badge badge-warning">Menunggu Persetujuan</span>`;
+                            return `<span class="badge badge-warning">${full.flow_name}</span>`;
                         case 'A':
-                            return `<span class="badge badge-success">Proses Pembelian</span>`;
+                            return `<span class="badge badge-success">${full.flow_name}</span>`;
                         case 'C':
-                            return `<span class="badge badge-danger">Ditolak</span>`;
+                            return `<span class="badge badge-danger">${full.flow_name}</span>`;
                         case 'F':
-                            return `<span class="badge badge-success">Selesai</span>`;
+                            return `<span class="badge badge-primary">${full.flow_name}</span>`;
                         default :
-                            return `<span class="badge badge-primary">${data}</span>`;
+                            return `<span class="badge badge-default">${full.flow_name}</span>`;
                         }
                     },
                 class : 'text-center'
@@ -160,13 +172,19 @@
                             <button class="btn btn-danger btn-sm hapusDraft" data-id="${full.draftcode}"><i class="icon-trash"></i></button>
                         `;
                     } else {
+                        let btnclass = full.has_action ? 'btn-danger' : 'btn-info'
                         return `
-                            <button class="btn btn-info btn-sm infoModal" data-id="${full.draftcode}" data-status="${full.status}" data-tgl="${full.tgl_pengajuan}" data-tgl-setujui="${full.tgl_disetujui}" data-total="${full.total_keseluruhan}" data-toggle="modal" data-target=".modal-detail"><i class="icon-info"></i></button>
+                            <button class="btn ${btnclass} btn-sm infoModal" data-toggle="modal" data-target=".modal-detail"><i class="icon-info"></i></button>
                         `;
                     }
                 }
             }
         ],
+        createdRow : function (row, data, dataIndex){
+            if(data.has_action){
+                $(row).addClass('xl-blue')
+            }
+        },
         order: [
             [1, 'asc']
         ],
@@ -193,32 +211,117 @@
         }
     });
 
+    function flow(lanjut, dc){
+        const url = lanjut ? '{{env('APP_URL')}}/pengajuan/setujuipengajuan/' : '{{env('APP_URL')}}/pengajuan/tolakpengajuan/'
+        const titel = lanjut ? 'Setujui dan Lanjutkan' : 'Tolak Pengajuan'
+        const text = lanjut ? 'Anda akan menyetujui pengajuan' : 'Anda Menolak Pengajuan'
+        const type = lanjut ? 'info' : 'warning'
+        let formData = new FormData();
+        formData.append('draftcode', dc);
+        let inputPenyedia = $('#field-penyedia').attr('data-req') == 'true';
+
+        if(lanjut && inputPenyedia){
+            let np = $('#nama_penyedia').val()
+            if(!np){
+                swal('Warning', 'Masukan Nama Penyedia', 'warning')
+                return false
+            } else {
+                formData.append('nama_penyedia', np);
+                if ($('#faktur_pembeilian').get(0).files.length !== 0){
+                    formData.append('faktur', $('#faktur_pembeilian')[0].files[0]);
+                } else {
+                    swal('Warning', 'Mohon upload faktur pembelian', 'warning')
+                    return false
+                }
+            }
+        }
+        swal({
+            title: titel,
+            text: text,
+            type: type,
+            showCancelButton: true,
+            confirmButtonColor: "#28a745",
+            confirmButtonText: "Ya, Setujui",
+            cancelButtonText: "Batal"
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        url: url+dc,
+                        method: 'POST',
+                        data: formData,
+                        contentType: false,
+                        processData: false,
+                        dataType: "JSON",
+                        success: function(resp) {
+                            if(resp.status == true){
+                                $('.modal-detail').modal('hide');
+                                swal({
+                                    title: "Success",
+                                    text: resp.message,
+                                    type: "success"
+                                }, function(){
+                                    dtPengajuan.ajax.reload();
+                                });
+                            }else{
+                                swal('Error', resp.message, 'info')
+                            }
+                        }
+                    });
+                }
+            }
+        );
+    }
+
     $(document).ready(function() {
 
         //detail pengajuan
         var dtPengajuanDetail;
         $('body').on('click', '.infoModal', function (e) {
             e.preventDefault();
-            let draftcode = $(this).data('id');
-            let tglPengajuan = $(this).data('tgl');
-            let totalKeseluruhan = $(this).data('total');
-            let status =  $(this).data('status');
-            let tglSetujui =  $(this).data('tgl-setujui');
+            const data = dtPengajuan.row($(this).closest('tr')).data()
+            let draftcode = data.draftcode;
+            let tglPengajuan = data.tgl_pengajuan;
+            let totalKeseluruhan = data.total_keseluruhan;
+            let status =  data.status;
+            let tglSetujui = data.tgl_disetujui;
+            let has_action = data.has_action;
 
-            $('.tolakPengajuan').hide();
-            $('.setujuiPengajuan').hide();
-            $('.konfirmasiPembelian').hide();
-            if(status == 'A') {
-                $('#tglsetujui-text').html(`Tanggal Disetujui : <b><span>` + tglSetujui + `</span></b>`)
-                $('.konfirmasiPembelian').show();
-            } else if (status == 'C') {
-                $('#tglsetujui-text').html(`Tanggal Ditolak : <b><span>` + tglSetujui + `</span></b>`)
-            } else if (status == 'F') {
-                $('#tglsetujui-text').html(`Tanggal Konfirmasi Pembelian : <b><span>` + tglSetujui + `</span></b>`)
-            } else {
-                $('.tolakPengajuan').show();
-                $('.setujuiPengajuan').show();
+            $('.tolakPengajuan').attr('data-draftcode', '').hide()
+            $('.setujuiPengajuan').attr('data-draftcode', '').hide()
+
+            $('#field-penyedia input[type="file"]').siblings('label').html('upload faktur pembelian')
+            $('#field-penyedia input[type="file"]').val(null).prop('disabled', false);
+            $('#field-penyedia input[type="text"]').val('').prop('disabled', false);
+            $('#field-penyedia .pdfviewer').attr('data-path', '')
+            $('#field-penyedia').show().attr('data-req', 'false')
+            $('#field-penyedia').hide()
+
+            if(has_action){
+                if(has_action.includes('acc')){
+                    $('.setujuiPengajuan').attr('data-draftcode', draftcode).show()
+                }
+
+                if(has_action.includes('decline')){
+                    $('.tolakPengajuan').attr('data-draftcode', draftcode).show()
+                }
+
+                if(has_action.includes('input_penyedia')){
+                    $('#field-penyedia').show().attr('data-req', 'true')
+                }
             }
+
+
+            if(data.nama_penyedia){
+                $('#field-penyedia').show()
+                $('#field-penyedia input[type="file"]').siblings('label').html('faktur pembelian')
+                $('#field-penyedia input[type="file"]').prop('disabled', true);
+                $('#field-penyedia input[type="text"]').val(data.nama_penyedia).prop('disabled', true);
+                $('#field-penyedia .pdfviewer').attr('data-path', data.faktur)
+            }
+
 
             $('#draftcode').html(draftcode);
             $('#tgl-pengajuan').html(tglPengajuan);
@@ -273,10 +376,6 @@
                             return 'Rp. ' + Number(data).toLocaleString('id-ID');
                         }
                     },
-                    {
-                        data: 'penyedia_barang'
-
-                    },
                 ],
                 order: [
                     [0, 'asc']
@@ -305,93 +404,17 @@
             });
         });
 
-        @if (AccessHelpers::isPPK())
-             //setujui pengajuan
-            $('body').on('click', '.setujuiPengajuan', function (e) {
-                e.preventDefault();
-                let draftcode = $('#draftcode').text();
-                swal({
-                    title: "Setujui Pengajuan",
-                    text: "Anda akan menyetujui pengajuan",
-                    type: "info",
-                    showCancelButton: true,
-                    confirmButtonColor: "#28a745",
-                    confirmButtonText: "Ya, Setujui",
-                    cancelButtonText: "Batal"
-                    }, function (isConfirm) {
-                        if (isConfirm) {
-                            $.ajax({
-                                headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                url: '{{env('APP_URL')}}/pengajuan/setujuipengajuan/'+draftcode,
-                                method: 'POST',
-                                data: {'draftcode':draftcode},
-                                contentType: false,
-                                processData: false,
-                                dataType: "JSON",
-                                success: function(resp) {
-                                    if(resp.status == true){
-                                        $('.modal-detail').modal('hide');
-                                        swal({
-                                            title: "Success",
-                                            text: resp.message,
-                                            type: "success"
-                                        }, function(){
-                                            dtPengajuan.ajax.reload();
-                                        });
-                                    }else{
-                                        swal('Error', resp.message, 'info')
-                                    }
-                                }
-                            });
-                        }
-                    });
-                });
+        $('button.setujuiPengajuan').click(function(){
+            let dc = $(this).attr('data-draftcode')
+            console.log(dc)
+            flow(true, dc)
+        })
 
-            //tolak pengajuan
-            $('body').on('click', '.tolakPengajuan', function (e) {
-                e.preventDefault();
-                let draftcode = $('#draftcode').text();
-                swal({
-                    title: "Tolak Pengajuan",
-                    text: "Anda akan menolak pengajuan",
-                    type: "info",
-                    showCancelButton: true,
-                    confirmButtonColor: "#dc3545",
-                    confirmButtonText: "Ya, Tolak",
-                    cancelButtonText: "Batal"
-                    }, function (isConfirm) {
-                        if (isConfirm) {
-                            $.ajax({
-                                headers: {
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                url: '{{env('APP_URL')}}/pengajuan/tolakpengajuan/'+draftcode,
-                                method: 'POST',
-                                data: {'draftcode':draftcode},
-                                contentType: false,
-                                processData: false,
-                                dataType: "JSON",
-                                success: function(resp) {
-                                    if(resp.status == true){
-                                        $('.modal-detail').modal('hide');
-                                        swal({
-                                            title: "Success",
-                                            text: resp.message,
-                                            type: "success"
-                                        }, function(){
-                                            dtPengajuan.ajax.reload();
-                                        });
-                                    }else{
-                                        swal('Error', resp.message, 'info')
-                                    }
-                                }
-                            });
-                        }
-                    });
-                });
-        @endif
+        $('button.tolakPengajuan').click(function(){
+            let dc = $(this).attr('data-draftcode')
+            console.log(dc)
+            flow(false, dc)
+        })
 
         @if (AccessHelpers::isPemohon())
             //edit draft
@@ -443,32 +466,20 @@
                 });
             });
         @endif
-
-        @if (AccessHelpers::isPemohon() || AccessHelpers::isPengelolaBMN())
-        $('body').on('click', '.konfirmasiPembelian', function (e) {
-            e.preventDefault();
-            let draftcode = $('#draftcode').text();
-            console.log(draftcode)
-            $.post('{{route('pengajuan.konfirmasiBeli')}}', {
-                'draftcode' : draftcode
-            }, function(resp){
-                if(resp.status){
-                    swal({
-                        title: "Success",
-                        text: resp.message,
-                        type: "success"
-                    }, function(){
-                        dtPengajuan.ajax.reload();
-                    });
-                } else {
-                    swal('Error', resp.msg, 'info')
-                }
-            })
-        })
-        @endif
     });
 
-
+    $('#field-penyedia .pdfviewer').click(function(){
+        let path = $(this).attr('data-path');
+        $.fancybox.open({
+            src  :  '{{env('APP_URL')}}/getfile/'+path,
+            type : 'iframe',
+            opts : {
+            afterShow : function( instance, current ) {
+                    console.info( 'done!' );
+                }
+            }
+        });
+    })
 </script>
 
 @endpush

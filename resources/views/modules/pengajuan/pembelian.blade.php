@@ -53,18 +53,12 @@
                             <hr>
                             <b>TOTAL : <span class="totalharga">Rp. {{number_format($pd->total_harga, 0, '.', '.')}}</span></b>
                         </div>
-                        <div class="col-md-4 mb-2">
-                            <div class="form-group pt-2">
-                                <label>Penyedia Barang :</label>
-                                <input type="text" class="form-control penyediabarang" value="{{$pd->penyedia_barang}}" placeholder="">
-                              </div>
-                        </div>
                     </div>
 
                 </div>
             </div>
             @endforeach
-            @else 
+            @else
             <div class="card listItem" data-repeater-item style="display: none">
                 <div class="card-header bg-secondary text-white">
                     <div class="float-right">
@@ -95,12 +89,6 @@
                             </div>
                             <hr>
                             <b>TOTAL : <span class="totalharga"></span></b>
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <div class="form-group pt-2">
-                                <label>Penyedia Barang :</label>
-                                <input type="text" class="form-control penyediabarang" placeholder="">
-                              </div>
                         </div>
                     </div>
 
@@ -154,7 +142,8 @@
 
 @endsection
 @push('js')
-<script> 
+<script>
+    const draftcode = `{{@$pengajuan->draftcode}}`
     $(function () {
         // form repeater
         $('.invoice-repeater, .repeater-default').repeater({
@@ -196,7 +185,7 @@
         $('[data-repeater-create]').click()
     }
 
-    function insertData(elm){ 
+    function insertData(elm){
         elm.find('.idBarang').val(selectedItem.id)
         elm.find('.itemName').html(selectedItem.uraian)
         elm.find('.subkel').html(selectedItem.subsubkelompok)
@@ -255,50 +244,8 @@
     }
 
     $('.savedraft').on('click', function() {
-        const frmData = new FormData();
-        let dataToSend = [];
-        let isValid = true;
-        let draftcode = @json($pengajuan ? $pengajuan->draftcode : '');
-
-        let totalKeseluruhan = $('#totalAll').html().replaceAll('.', '');
-
-        $('.listItem').each(function() {
-            let itemName = $(this).find('.itemName').text(),
-                idBarang = $(this).find('.idBarang').val(),
-                subkel = $(this).find('.subkel').text(),
-                hargaMaks = $(this).find('.harga').text(),
-                satuan = $(this).find('.satuanvalue').text(),
-                hargaBarang = $(this).find('.hargabarang').val().replaceAll('.',''),
-                jumlahBarang = $(this).find('.jumlahbarang').val(),
-                totalHarga = $(this).find('.totalharga').text().replace('Rp.', '').replaceAll('.',''),
-                penyediaBarang = $(this).find('.penyediabarang').val();
-
-            if (hargaBarang === '' || jumlahBarang === '' || penyediaBarang === '') {
-                $(this).find('.hargabarang, .jumlahbarang, .penyediabarang').css('border', '1px solid red');
-                isValid = false;
-            } else {
-                $(this).find('.hargabarang, .jumlahbarang, .penyediabarang').css('border', '1px solid #ced4da');
-
-                var itemData = {
-                    namaBarang: itemName,
-                    idBarang: idBarang,
-                    subkel: subkel,
-                    hargaMaks: hargaMaks,
-                    satuan: satuan,
-                    hargaBarang: hargaBarang,
-                    jumlahBarang: jumlahBarang,
-                    totalHarga: totalHarga,
-                    penyediaBarang: penyediaBarang
-                };
-
-                dataToSend.push(itemData);
-            }
-        });
-        frmData.append('draftcode', draftcode)
-        frmData.append('total_keseluruhan', totalKeseluruhan)
-        frmData.append('detail', JSON.stringify(dataToSend))
-
-        if (isValid && dataToSend.length > 0) {
+        let frmData = getData();
+        if (frmData) {
             $.ajax({
                 headers: {
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -318,24 +265,18 @@
                             type: "success"
                         }, function(){
                             window.location.href = "{{env('APP_URL')}}/pengajuan/draft/" + resp.draftcode;
-                        });                        
+                        });
                     } else {
                         swal('Error', resp.message, 'error')
                     }
                 }
             });
-        } else if (!isValid) {
-            swal('Data Tidak Valid', 'Pastikan semua input terisi dengan benar', 'error')
-        } else if (dataToSend.length === 0) {
-            swal('Belum ada barang', 'Tambah barang terlebih dahulu', 'warning')
         }
-        console.log(dataToSend)
     });
 
     function ajukanBarang() {
-        let draftcode = @json($pengajuan ? $pengajuan->draftcode : '');
-        let frmData = new FormData(); 
-        if(draftcode){  
+        let frmData = getData();
+        if(frmData){
             swal({
                 title: "Ajukan Pembelian",
                 text: "Pastikan barang sudah sesuai",
@@ -346,12 +287,12 @@
                 cancelButtonText: "Batal"
             }, function (isConfirm) {
                 if (isConfirm) {
-                    frmData.append('draftcode', draftcode)
+                    frmData.append('ajukan', 1)
                     $.ajax({
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        url: '{{ ENV('APP_URL')}}/pengajuan/ajukan',
+                        url: '{{ ENV('APP_URL')}}/pengajuan/simpandraft',
                         method: 'POST',
                         data: frmData,
                         contentType: false,
@@ -366,7 +307,7 @@
                                     type: "success"
                                 }, function(){
                                     window.location.href = "{{env('APP_URL')}}/pengajuan/daftarpembelian/";
-                                });                        
+                                });
                             } else {
                                 swal('Error', resp.message, 'error')
                             }
@@ -374,9 +315,63 @@
                     });
                 }
             });
-            
+
         } else {
             swal('Belum disimpan', 'Klik simpan draft terlebih dahulu', 'warning')
+        }
+    }
+
+    function getData(){
+        const frmData = new FormData();
+        let dataToSend = [];
+        let isValid = true;
+
+        let totalKeseluruhan = $('#totalAll').html().replaceAll('.', '');
+
+        $('.listItem').each(function() {
+            let itemName = $(this).find('.itemName').text(),
+                idBarang = $(this).find('.idBarang').val(),
+                subkel = $(this).find('.subkel').text(),
+                hargaMaks = $(this).find('.harga').text(),
+                satuan = $(this).find('.satuanvalue').text(),
+                hargaBarang = $(this).find('.hargabarang').val().replaceAll('.',''),
+                jumlahBarang = $(this).find('.jumlahbarang').val(),
+                totalHarga = $(this).find('.totalharga').text().replace('Rp.', '').replaceAll('.','')
+
+            if (hargaBarang === '' || jumlahBarang === '' ) {
+                $(this).find('.hargabarang, .jumlahbarang, .penyediabarang').css('border', '1px solid red');
+                isValid = false;
+            } else {
+                $(this).find('.hargabarang, .jumlahbarang').css('border', '1px solid #ced4da');
+
+                var itemData = {
+                    namaBarang: itemName,
+                    idBarang: idBarang,
+                    subkel: subkel,
+                    hargaMaks: hargaMaks,
+                    satuan: satuan,
+                    hargaBarang: hargaBarang,
+                    jumlahBarang: jumlahBarang,
+                    totalHarga: totalHarga,
+                };
+
+                dataToSend.push(itemData);
+            }
+        });
+        frmData.append('draftcode', draftcode)
+        frmData.append('total_keseluruhan', totalKeseluruhan)
+        frmData.append('detail', JSON.stringify(dataToSend))
+
+        if(isValid && dataToSend.length > 0) {
+            console.log(frmData)
+            return frmData
+        } else {
+            if (!isValid) {
+                swal('Data Tidak Valid', 'Pastikan semua input terisi dengan benar', 'error')
+            } else if (dataToSend.length === 0) {
+                swal('Belum ada barang', 'Tambah barang terlebih dahulu', 'warning')
+            }
+            return false
         }
     }
 

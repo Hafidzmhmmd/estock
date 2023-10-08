@@ -13,6 +13,7 @@ use App\Barang;
 use App\Pengajuan;
 use App\PengajuanDetail;
 use App\StockGudang;
+use App\Flow;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -64,7 +65,35 @@ class DataController extends Controller
         } else {
             $data = $data->where('id_pemohon', $user->id);
         }
-        return Datatables::of($data)->toJson();
+        return Datatables::of($data)
+        ->editColumn('flow_name', function($data)
+        {
+            $fn = Flow::find($data->flow);
+            return $fn['flow_name'];
+        })
+        ->editColumn('has_action', function($data) use($user)
+        {
+            $fn = Flow::find($data->flow);
+            if($fn['role'] == $user->role){
+                $acts = [];
+                if($fn['can_edit']){
+                    $acts[] = 'edit';
+                } else {
+                    if($fn['can_decline']){
+                        $acts[] = 'decline';
+                    }
+                    $acts[] = 'acc';
+                }
+                if($fn['input_penyedia']== '1'){
+                    $acts[] = 'input_penyedia';
+                }
+
+                return $acts;
+            } else {
+                return false;
+            }
+        })
+        ->toJson();
     }
 
     public function pengajuandetailDataTables(Request $request){
