@@ -69,12 +69,13 @@ class DataController extends Controller
         ->editColumn('flow_name', function($data)
         {
             $fn = Flow::find($data->flow);
-            return $fn['flow_name'];
+            return $fn['flow_name'] ?? '';
         })
         ->editColumn('has_action', function($data) use($user)
         {
             $fn = Flow::find($data->flow);
-            if($fn['role'] == $user->role){
+            $role = $fn['role'] ?? '';
+            if($role == $user->role){
                 $acts = [];
                 if($fn['can_edit']){
                     $acts[] = 'edit';
@@ -87,7 +88,6 @@ class DataController extends Controller
                 if($fn['input_penyedia']== '1'){
                     $acts[] = 'input_penyedia';
                 }
-
                 return $acts;
             } else {
                 return false;
