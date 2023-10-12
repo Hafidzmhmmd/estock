@@ -109,11 +109,36 @@ class DataController extends Controller
                 $data = DB::table('stock_gudang')->leftJoin('m_barang','stock_gudang.barang_id','=','m_barang.id');
             }
         } else {
-            $data = DB::table('stock_gudang')->leftJoin('m_barang','stock_gudang.barang_id','=','m_barang.id')
-            ->where('gudang_id', $gudang_id);
+            $data = DB::table(DB::raw('stock_gudang sg'))
+            ->select('sg.gudang_id','sg.barang_id',
+            DB::raw('SUM(sg.stock) as stock'),DB::raw('SUM(sg.rencana) as rencana'),DB::raw('GROUP_CONCAT(sg.draftcode) as draftcodes'),
+            'mb.uraian','mb.satuan','mb.harga_maksimum')
+            ->leftJoin(DB::raw('m_barang mb'),'sg.barang_id','=','mb.id')
+            ->where('sg.gudang_id', $gudang_id)->where('sg.stock','>',0)
+            ->groupBy('sg.barang_id', 'sg.gudang_id','mb.uraian','mb.satuan','mb.harga_maksimum');
         }
         if(isset($data)){
-            return Datatables::of($data)->toJson();
+            return Datatables::of($data)
+            ->editColumn('fifo', function($data)
+            {
+                $list = explode(',',$data->draftcodes);
+                if(count($list) >  1){
+                    $arr = [];
+                    foreach ($list as $dc){
+                        $fn = StockGudang::where('draftcode', $dc)->where('gudang_id', $data->gudang_id)->orderBy('created_at', 'asc')->first();
+                        $arr[$dc] = [
+                            'rencana' => $fn->rencana,
+                            'stock' => $fn->stock,
+                            'tanggal' => $fn->created_at->format('d-m-Y H:i')
+                        ];
+
+                    }
+                    return $arr;
+                } else {
+                    return null;
+                }
+            })
+            ->toJson();
         } else {
             return null;
         }

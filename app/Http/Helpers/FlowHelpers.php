@@ -32,7 +32,7 @@ class FlowHelpers {
                     $current->{$nextFlow->update_date} = new DateTime();
                 }
                 if($nextFlow->proses_rencana){
-                    $rencana = StockHelpers::addStockRencana($draftcode);
+                    $rencana = StockHelpers::addStockRencana($current);
                     if(!$rencana['status']){
                         $flow->err = $rencana['msg'];
                         return $flow;
@@ -41,6 +41,18 @@ class FlowHelpers {
                             'arah' => config('app.flow.rencana'),
                             'draftcode' => $draftcode
                         ], $rencana['logs']);
+                    }
+                }
+                if($nextFlow->proses_stock){
+                    $stock = StockHelpers::setStock($current);
+                    if(!$stock['status']){
+                        $flow->err = $stock['msg'];
+                        return $flow;
+                    } else {
+                        $log = RiwayatHelpers::log((object)[
+                            'arah' => config('app.flow.stock'),
+                            'draftcode' => $draftcode
+                        ], $stock['logs']);
                     }
                 }
                 if($current->save()){

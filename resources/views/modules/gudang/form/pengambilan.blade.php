@@ -99,7 +99,6 @@
                         "takeout": data
                     },
                     function(data, status) {
-                        console.log(data)
                         if (data.status) {
                             swal("Berhasil!", "proses pengambilan barang berhasil di catat", "success")
                             $('.form-pengambilan').modal('hide')

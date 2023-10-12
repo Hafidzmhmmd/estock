@@ -16,19 +16,19 @@ class GudangController extends Controller
     public function index()
     {
         $gudang = Gudang::select('*');
-        $riwayat = RiwayatGudang::select('*')->with('hasStockId.hasBarang');
+        // $riwayat = RiwayatGudang::select('*')->with('hasStockId.hasBarang');
         $user = Auth::user();
         $data['pengelolaGudang'] = false;
         if(!in_array($user->role,config('app.akses.gudangall'))){
             $gudang = $gudang->where('bidang_id', $user->bidang);
-            $riwayat =  $riwayat->whereHas('hasStockId.hasBarang', function (Builder $query) {
-                $query->where('gudang_id', '=', '1');
-            });
+            // $riwayat =  $riwayat->whereHas('hasStockId.hasBarang', function (Builder $query) {
+            //     $query->where('gudang_id', '=', '1');
+            // });
         } else {
             $data['pengelolaGudang'] = true;
         }
         $data['gudang'] = $gudang->get();
-        $data['riwayat'] = $riwayat->orderBy('created_at','desc')->get();
+        // $data['riwayat'] = $riwayat->orderBy('created_at','desc')->get();
         return view('modules.gudang.index',$data);
     }
 
@@ -41,22 +41,89 @@ class GudangController extends Controller
         {
             DB::transaction(function() use($request) {
                 foreach($request->takeout as $key => $value){
-                    //gudangid
                     foreach($value as $item){
-                        $find = StockGudang::where('gudang_id', $key)->where('barang_id', $item['barang_id']);
-                        if($find->count()){
+                        $find = StockGudang::where('gudang_id', $key)->where('barang_id', $item['barang_id'])->where('stock','>',0);
+                        $fCount = $find->count();
+                        if($fCount == 1){
                             $data = $find->first();
                             $before = $data->stock;
                             $stock = intval($before) - intval($item['jumlah']);
                             if($stock >= 0){
                                 $data->stock = $stock;
                                 $data->save();
-                                RiwayatHelpers::takeout((object)[
-                                    'stock_id' => $data->stock_id,
-                                    'jumlah' => $item['jumlah'],
+
+                                $log = RiwayatHelpers::changeLog((object)[
+                                    'gudangid' => $key,
+                                    'barangid' => $item['barang_id'],
                                     'before' => $before,
                                     'after' => $stock,
-                                    'keterangan' => $request->keterangan ?? 'pengambilan barang keluar'
+                                    'draftcode' => $data->draftcode,
+                                    'stock_id' => $data->stock_id,
+                                    'keterangan' => 'pengambilan barang',
+                                    'jumlah' => $item['jumlah'],
+                                    'status' => 1,
+                                ]);
+                            } else {
+                                $log = RiwayatHelpers::changeLog((object)[
+                                    'gudangid' => $key,
+                                    'barangid' => $item['barang_id'],
+                                    'before' => $before,
+                                    'after' => $before,
+                                    'draftcode' => $data->draftcode,
+                                    'stock_id' => $data->stock_id,
+                                    'keterangan' => 'pengambilan barang',
+                                    'jumlah' => $item['jumlah'],
+                                    'status' => 0,
+                                ]);
+                            }
+                        }
+                        else if($fCount >= 1)
+                        {
+                            $datas = $find->orderBy('created_at','asc')->get();
+                            $jumlah = $item['jumlah'];
+                            $totalJumlah = $find->sum('stock');
+                            if($jumlah >= 0 && $jumlah <= $totalJumlah){
+                                foreach($datas as $data){
+                                    if($jumlah != 0){
+                                        $before = $data->stock;
+                                        $stock = intval($before) - intval($jumlah);
+                                        $take = intval($jumlah);
+                                        if($stock >= 0){
+                                            $data->stock = $stock;
+                                            $jumlah = 0;
+                                        }
+                                        else if($stock < 0){
+                                            $take = $before;
+                                            $jumlah = $stock * -1;
+                                            $stock = 0;
+                                            $data->stock = $stock;
+                                        }
+                                        $data->save();
+
+                                        $log = RiwayatHelpers::changeLog((object)[
+                                            'gudangid' => $key,
+                                            'barangid' => $item['barang_id'],
+                                            'before' => $before,
+                                            'after' => $stock,
+                                            'draftcode' => $data->draftcode,
+                                            'stock_id' => $data->stock_id,
+                                            'keterangan' => 'pengambilan barang',
+                                            'jumlah' => $take,
+                                            'status' => 1,
+                                        ]);
+                                    }
+                                }
+                            } else {
+                                $log = RiwayatHelpers::changeLog((object)[
+                                    'gudangid' => $key,
+                                    'barangid' => $item['barang_id'],
+                                    'before' =>$totalJumlah,
+                                    'after' => $totalJumlah,
+                                    'draftcode' => '',
+                                    'stock_id' => '',
+                                    'keterangan' => 'pengambilan barang',
+                                    'jumlah' => $item['jumlah'],
+                                    'status' => 0,
                                 ]);
                             }
                         }

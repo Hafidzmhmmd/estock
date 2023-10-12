@@ -50,6 +50,9 @@ class RiwayatHelpers
         $log->after = $data->after;
         $log->draftcode = $data->draftcode;
         $log->stock_id = $data->stock_id;
+        $log->keterangan = $data->keterangan;
+        $log->jumlah = $data->jumlah;
+        $log->status = $data->status;
 
         if($log->save()){
             return $log->id;
