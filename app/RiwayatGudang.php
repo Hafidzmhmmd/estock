@@ -21,9 +21,9 @@ class RiwayatGudang extends Model
      */
     protected $primaryKey = 'id';
 
-    public function hasStockId()
+    public function hasPengajuan()
     {
-        return $this->belongsTo('App\StockGudang', 'stock_id');
+        return $this->belongsTo('App\Pengajuan', 'draftcode', 'draftcode');
     }
 
     public function getCreatedAtAttribute($date)

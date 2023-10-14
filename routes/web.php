@@ -33,6 +33,8 @@ Route::middleware(['access'])->group(function () {
     Route::prefix('gudang')->name('gudang.')->group(function () {
         Route::get('/', 'GudangController@index')->name('index');
         Route::post('/', 'GudangController@takeout')->name('takeout');
+        Route::get('/riwayat', 'GudangController@riwayat')->name('riwayat');
+        Route::post('/riwayatDetails', 'GudangController@riwayatDetails')->name('riwayatDetails');
     });
 
     Route::prefix('data')->name('data.')->group(function () {

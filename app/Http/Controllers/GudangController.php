@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Gudang;
 use App\StockGudang;
 use App\RiwayatGudang;
+use App\Pengajuan;
+use App\PengajuanDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\RiwayatHelpers;
@@ -137,5 +139,20 @@ class GudangController extends Controller
             $resp['mssg'] = $exception;
         }
         return response()->json($resp);
+    }
+
+    public function riwayat(){
+        $user = Auth::user();
+        $riwayat = RiwayatGudang::whereHas('hasPengajuan',function (Builder $query) use($user) {
+            $query->where('bidang', $user->bidang);
+        })->orderBy('created_at', 'desc')->paginate(10);
+        return response()->json($riwayat);
+    }
+
+    public function riwayatDetails(Request $request){
+        $data['details'] = PengajuanDetail::where('draftcode', $request->draftcode)->get();
+
+
+        return response()->json($data);
     }
 }

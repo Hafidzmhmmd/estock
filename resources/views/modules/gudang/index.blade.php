@@ -65,43 +65,13 @@
                             </div>
                         </div>
                         <div class="tab-pane" id="riwayat">
-                            {{-- @include('modules.gudang.form.riwayat',['riwayat' => $riwayat]) --}}
-                            <ul class="right_chat list-unstyled mb-0">
-                                <li class="offline">
-                                    <a href="javascript:void(0);">
-                                        <div class="media">
-                                            <button type="button" class="btn btn-outline-success m-1" title="Save"><span class="sr-only">Save</span><i class="fa fa-save"></i></button>
-                                            <div class="media-body ml-4">
-                                                <span class="name">@Isabella <small class="float-right">1 hours ago</small></span>
-                                                <span class="message">Contrary to popular belief, Lorem Ipsum is not simply random text</span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="offline">
-                                    <a href="javascript:void(0);">
-                                        <div class="media">
-                                            <button type="button" class="btn btn-outline-success m-1" title="Save"><span class="sr-only">Save</span><i class="fa fa-save"></i></button>
-                                            <div class="media-body ml-4">
-                                                <span class="name">@Isabella <small class="float-right">1 hours ago</small></span>
-                                                <span class="message">Contrary to popular belief, Lorem Ipsum is not simply random text</span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="offline">
-                                    <a href="javascript:void(0);">
-                                        <div class="media">
-                                            <button type="button" class="btn btn-outline-success m-1" title="Save"><span class="sr-only">Save</span><i class="fa fa-save"></i></button>
-                                            <div class="media-body ml-4">
-                                                <span class="name">@Isabella <small class="float-right">1 hours ago</small></span>
-                                                <span class="message">Contrary to popular belief, Lorem Ipsum is not simply random text</span>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
-
+                            <h1 class="text-center loader p-5 position-absolute w-100" style="display: none">
+                                <i class="fa fa-cog fa-spin"></i>
+                            </h1>
+                            <ul class="right_chat list-unstyled mb-0 list-riwayat" style="min-height: 300px">
                             </ul>
+                            <ul class="pagination justify-content-center">
+                              </ul>
                         </div>
                         @if ($pengelolaGudang)
                             <div class="tab-pane" id="transfer">
@@ -322,5 +292,107 @@
 
             }
         })
+
+        function riwayatGudang(p){
+            $('#riwayat .loader').show();
+            $('#riwayat ul.list-riwayat').html('')
+            let page = p ?? 1;
+            let url = `{{ route('gudang.riwayat') }}?page=${page}`
+            $.get(url, function(resp, status){
+                if(status === 'success' && resp.data.length){
+                    console.log(resp)
+                    createRiwayat(resp.data, resp.last_page, resp.current_page)
+                    $('#riwayat .loader').hide();
+                }
+            })
+        }
+
+        const styleRiwayat = {
+            1 : {
+                icon : 'icon-basket',
+                color : 'info',
+                title : 'Pengajuan disetujui'
+            },
+            2 : {
+                icon : 'icon-arrow-down',
+                color : 'success',
+                title : 'Penambahan Stock'
+            },
+            3 : {
+                icon : 'icon-arrow-up',
+                color : 'danger',
+                title : 'Pengambilan Stock'
+            },
+        }
+
+        function createRiwayat(data, totalPage, currentPage){
+            let target = $('#riwayat ul.list-riwayat')
+            data.forEach(function(d){
+                let style = styleRiwayat[d.arah];
+                target.append(`
+                    <li class="offline" onclick="riwayatDetails(this,'${d.draftcode}')">
+                        <a href="javascript:void(0);">
+                            <div class="media">
+                                <button type="button" class="btn btn-outline-${style.color} m-1"><i class="${style.icon}"></i></button>
+                                <div class="media-body ml-4">
+                                    <span class="name">${style.title} : ${d.draftcode} <small class="float-right">${d.created_at}</small></span>
+                                    <span class="message">${d.keterangan ?? 'tidak ada catatan'}</span>
+                                </div>
+                            </div>
+                        </a>
+                        <div style='height:100px; display:none'><table class='table riwayatDetails table-dark' data-draftcode='${d.draftcode}'></table></div>
+                    </li>
+                `)
+            })
+
+            let paginate = $('#riwayat ul.pagination')
+            paginate.html('');
+            if(totalPage > 1){
+                paginate.append(`<li class="page-item ${ currentPage > 1 ? '' : 'disabled'}" ${currentPage > 1  ? "onclick='riwayatGudang("+(currentPage - 1)+")'" : '' }>
+                    <a class="page-link" href="javascript:void(0);">
+                        <i class="fa fa-chevron-left"></i>
+                    </a>
+                </li>`)
+
+                for (let i = 1; i <= totalPage; i++) {
+                    paginate.append(`
+                        <li class="page-item ${ i == currentPage ? 'active' : ''}" onclick='riwayatGudang(${i})'>
+                            <a class="page-link" href="javascript:void(0);">${i}</a>
+                        </li>
+                    `);
+                }
+
+                paginate.append(`<li class="page-item ${currentPage < totalPage  ? '' : 'disabled'}" ${currentPage < totalPage  ? "onclick='riwayatGudang("+(currentPage + 1)+")'" : '' }>
+                    <a class="page-link" href="javascript:void(0);">
+                        <i class="fa fa-chevron-right"></i>
+                    </a>
+                </li>`)
+            }
+        }
+        riwayatGudang()
+
+        function riwayatDetails(el, dc){
+            const target = $(el).find(`.riwayatDetails[data-draftcode="${dc}"]`);
+            if(target.children().length === 0){
+                target.html('');
+                target.parent().show();
+                $.post('{{route('gudang.riwayatDetails')}}', {draftcode:dc}, function(resp, status){
+                    console.log(resp,status)
+                    if(status === 'success' && resp.details.length){
+                        resp.details.forEach(function(d){
+                            target.append(`
+                                <tr>
+                                    <td>${d.nama_barang}</td>
+                                    <td>Jumlah : ${d.jumlah_barang} ${d.satuan}</td>
+                                    <td>Harga : ${d.total_harga}</td>
+                                </tr>
+                            `)
+                        })
+                    }
+                })
+            } else {
+                target.parent().toggle();
+            }
+        }
     </script>
 @endpush
