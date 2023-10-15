@@ -5,6 +5,7 @@ namespace App\Http\Helpers;
 use App\Pengajuan;
 use App\PengajuanDetail;
 use App\Gudang;
+use App\Barang;
 use App\StockGudang;
 use App\Http\Helpers\RiwayatHelpers;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,7 @@ class StockHelpers {
                         $before = 0;
                         $log = null;
                         $row = StockGudang::where('gudang_id', $gudangid)
-                        ->where('barang_id', $data->id_barang)->where('draftcode', $draftcode);
+                            ->where('barang_id', $data->id_barang)->where('draftcode', $draftcode);
                         if($row->count()){
                             $row = $row->first();
                             $before = $row->rencana;
@@ -138,7 +139,6 @@ class StockHelpers {
                                 'before' => 0,
                                 'after' => 0,
                                 'draftcode' => $draftcode,
-                                'stock_id' => $row->stock_id,
                                 'keterangan' => 'konfirmasi pembelian',
                                 'jumlah' => 0,
                                 'status' => 0,
@@ -163,5 +163,20 @@ class StockHelpers {
             $payload['msg'] = 'pengajuan tidak ditemukan';
         }
         return $payload;
+    }
+
+    public static function hargaBarangGudang($barangid){
+        $stock = StockGudang::where('barang_id', $barangid)
+            ->orWhere(function($query){
+                $query->where('rencana', '>', 0);
+                $query->orWhere('stock', '>', 0);
+            });
+        if($stock->count()){
+            $draftcodes = $stock->pluck('draftcode');
+            $avg = PengajuanDetail::where('id_barang', $barangid)->whereIn('draftcode', $draftcodes)->avg('harga_satuan');
+            return round($avg);
+        } else {
+            return 0;
+        }
     }
 }

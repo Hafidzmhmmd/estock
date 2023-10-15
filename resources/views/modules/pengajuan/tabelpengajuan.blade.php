@@ -48,6 +48,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div>
+                            <p>Pemohon : <b><span id="pemohon"></span></b></p>
+                            <p>Bidang : <b><span id="bidang"></span></b></p>
                             <p>Tanggal Pengajuan : <b><span id="tgl-pengajuan"></span></b></p>
                             <p id="tglsetujui-text"></p>
                             <p>Total Keseluruhan : <b><span id="total-keseluruhan"></span></b></p>
@@ -104,7 +106,11 @@
 
 @push('js')
 <script>
-    var dtPengajuan = $('#tblPengajuan').DataTable({
+    var dtPengajuan = $('#tblPengajuan')
+    .on('preXhr.dt', function ( e, settings, data ) {
+            ajaxLoader();
+        })
+    .DataTable({
         processing: true,
         serverSide: true,
         "ajax": {
@@ -114,6 +120,9 @@
                     d.level = {{$slevel}};
                 }
             @endif
+        },
+        fnDrawCallback: function() {
+            closeAjaxLoader();
         },
         columns: [
             // columns according to JSON
@@ -207,7 +216,7 @@
             }
         },
         initComplete: function() {
-
+            closeAjaxLoader();
         }
     });
 
@@ -265,7 +274,7 @@
                                 }, function(){
                                     dtPengajuan.ajax.reload();
                                 });
-                            }else{
+                            } else{
                                 swal('Error', resp.message, 'info')
                             }
                         }
@@ -288,6 +297,9 @@
             let status =  data.status;
             let tglSetujui = data.tgl_disetujui;
             let has_action = data.has_action;
+
+            $('#pemohon').html(data.info.pemohon.name)
+            $('#bidang').html(data.info.bidang.nama_bidang)
 
             $('.tolakPengajuan').attr('data-draftcode', '').hide()
             $('.setujuiPengajuan').attr('data-draftcode', '').hide()
@@ -406,13 +418,11 @@
 
         $('button.setujuiPengajuan').click(function(){
             let dc = $(this).attr('data-draftcode')
-            console.log(dc)
             flow(true, dc)
         })
 
         $('button.tolakPengajuan').click(function(){
             let dc = $(this).attr('data-draftcode')
-            console.log(dc)
             flow(false, dc)
         })
 
@@ -475,7 +485,7 @@
             type : 'iframe',
             opts : {
             afterShow : function( instance, current ) {
-                    console.info( 'done!' );
+
                 }
             }
         });

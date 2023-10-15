@@ -49,7 +49,7 @@
                     <div class="tab-content">
                         <div class="tab-pane show active" id="list-barang">
                             <div class="table-responsive">
-                                <table class="table m-b-0 table-hover" id="tblstock">
+                                <table class="table m-b-0 table-hover w-100" id="tblstock">
                                     <thead>
                                         <tr>
                                             <th>Uraian</th>
@@ -91,14 +91,25 @@
 
 @push('js')
     <script>
-        var dtBarang = $('#tblstock').DataTable({
+        var dtBarang = $('#tblstock')
+        .on('preXhr.dt', function ( e, settings, data ) {
+            ajaxLoader();
+        })
+        .DataTable({
             processing: true,
             serverSide: true,
+            responsive: true,
             "ajax": {
                 "url": "{{ route('data.stockgudangDataTables') }}",
                 data: function(d) {
                     d.gudang_id = $('.thisgudang').attr('data-gudangid')
-                }
+                },
+                BeforeSend: function(){
+                    alert()
+                },
+            },
+            fnDrawCallback: function() {
+                closeAjaxLoader();
             },
             columns: [
                 // columns according to JSON
@@ -176,7 +187,7 @@
                 }
             },
             initComplete: function() {
-
+                closeAjaxLoader();
             }
         });
 
@@ -300,10 +311,9 @@
             let url = `{{ route('gudang.riwayat') }}?page=${page}`
             $.get(url, function(resp, status){
                 if(status === 'success' && resp.data.length){
-                    console.log(resp)
                     createRiwayat(resp.data, resp.last_page, resp.current_page)
-                    $('#riwayat .loader').hide();
                 }
+                $('#riwayat .loader').hide();
             })
         }
 
@@ -311,17 +321,20 @@
             1 : {
                 icon : 'icon-basket',
                 color : 'info',
-                title : 'Pengajuan disetujui'
+                title : 'Pengajuan disetujui',
+                extra : '',
             },
             2 : {
                 icon : 'icon-arrow-down',
                 color : 'success',
-                title : 'Penambahan Stock'
+                title : 'Penambahan Stock',
+                extra : '',
             },
             3 : {
                 icon : 'icon-arrow-up',
                 color : 'danger',
-                title : 'Pengambilan Stock'
+                title : 'Pengambilan Stock',
+                extra : `<small class="float-right badge badge-primary badge-pill pdfReport"><i class='fa fa-file-pdf-o'></i> PDF</small>`,
             },
         }
 
@@ -330,17 +343,19 @@
             data.forEach(function(d){
                 let style = styleRiwayat[d.arah];
                 target.append(`
-                    <li class="offline" onclick="riwayatDetails(this,'${d.draftcode}')">
+                    <li class="offline riwayatRow" data-riwayat='${d.id}'>
                         <a href="javascript:void(0);">
                             <div class="media">
-                                <button type="button" class="btn btn-outline-${style.color} m-1"><i class="${style.icon}"></i></button>
+                                <button onclick="riwayatDetails(this,'${d.id}')" type="button" class="btn btn-outline-${style.color} m-1"><i class="${style.icon}"></i></button>
                                 <div class="media-body ml-4">
                                     <span class="name">${style.title} : ${d.draftcode} <small class="float-right">${d.created_at}</small></span>
-                                    <span class="message">${d.keterangan ?? 'tidak ada catatan'}</span>
+                                    <span class="message d-block">${d.keterangan ?? 'tidak ada catatan'} ${style.extra}</span>
                                 </div>
                             </div>
                         </a>
-                        <div style='height:100px; display:none'><table class='table riwayatDetails table-dark' data-draftcode='${d.draftcode}'></table></div>
+                        <div style='min-height:100px; display:none'>
+                            <div class='loader text-center h3'><i class='fa fa-spinner fa-spin'></i></div>
+                            <table class='table riwayatDetails table-dark' data-rid='${d.id}'></table></div>
                     </li>
                 `)
             })
@@ -371,28 +386,44 @@
         }
         riwayatGudang()
 
-        function riwayatDetails(el, dc){
-            const target = $(el).find(`.riwayatDetails[data-draftcode="${dc}"]`);
+        function riwayatDetails(el, id){
+            $(el).toggleClass('active')
+            const target = $(el).closest('.riwayatRow').find(`.riwayatDetails[data-rid="${id}"]`);
             if(target.children().length === 0){
                 target.html('');
                 target.parent().show();
-                $.post('{{route('gudang.riwayatDetails')}}', {draftcode:dc}, function(resp, status){
+                target.siblings('.loader').show();
+                $.post('{{route('gudang.riwayatDetails')}}', {id:id}, function(resp, status){
                     console.log(resp,status)
                     if(status === 'success' && resp.details.length){
                         resp.details.forEach(function(d){
                             target.append(`
                                 <tr>
-                                    <td>${d.nama_barang}</td>
-                                    <td>Jumlah : ${d.jumlah_barang} ${d.satuan}</td>
-                                    <td>Harga : ${d.total_harga}</td>
+                                    <td class='w-50'>${d.nama_barang}</td>
+                                    <td class='w-25'>Jumlah : ${d.jumlah_barang} ${d.satuan}</td>
+                                    <td class='w-25'>Harga : ${d.total_harga}</td>
                                 </tr>
                             `)
                         })
+                        target.siblings('.loader').hide();
                     }
                 })
             } else {
                 target.parent().toggle();
             }
         }
+
+        $('#riwayat ul.list-riwayat').on('click', '.pdfReport', function(event){
+            let riwayat = $(this).closest('.riwayatRow').attr('data-riwayat');
+            $.fancybox.open({
+            src  :  '{{env('APP_URL')}}/pdf/pengambilan?riwayat='+riwayat,
+            type : 'iframe',
+            opts : {
+                afterShow : function( instance, current ) {
+
+                }
+            }
+        });
+        })
     </script>
 @endpush

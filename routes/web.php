@@ -46,4 +46,5 @@ Route::middleware(['access'])->group(function () {
     });
 
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');
+    Route::get('pdf/pengambilan','FileController@pdfPengambilan')->name('pdf.pengamnbilan');
 });

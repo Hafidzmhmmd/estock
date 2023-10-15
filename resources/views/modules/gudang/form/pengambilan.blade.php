@@ -103,6 +103,7 @@
                             swal("Berhasil!", "proses pengambilan barang berhasil di catat", "success")
                             $('.form-pengambilan').modal('hide')
                             dtBarang.draw();
+                            riwayatGudang()
                             $("#takeoutHolder .card-body .list-group").html('')
                         } else {
                             swal("Gagal!", "gagal melakukan pengambilan barang!", "warning")

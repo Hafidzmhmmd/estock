@@ -77,7 +77,11 @@
 
 @push('js')
 <script>
-      var dt_{{$table_name}} = $('#{{$table_name}}').DataTable({
+      var dt_{{$table_name}} = $('#{{$table_name}}')
+       .on('preXhr.dt', function ( e, settings, data ) {
+            ajaxLoader();
+        })
+      .DataTable({
         processing: true,
         serverSide: true,
         "ajax": {
@@ -87,6 +91,9 @@
                 d.kel = $('#slcKelompok_{{$table_name}}').val()
                 d.subsub = $('#sclSubSubKelompok_{{$table_name}}').val()
             }
+        },
+        fnDrawCallback: function() {
+            closeAjaxLoader();
         },
         columns: [
             // columns according to JSON

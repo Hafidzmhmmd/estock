@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Flow;
 use App\Pengajuan;
 use App\Progress;
+use App\Gudang;
 use DateTime;
 use App\Http\Helpers\StockHelpers;
 use App\Http\Helpers\RiwayatHelpers;
@@ -37,9 +38,12 @@ class FlowHelpers {
                         $flow->err = $rencana['msg'];
                         return $flow;
                     } else {
+                        $gudang = Gudang::where('bidang_id', $current->bidang)->first();
                         $log = RiwayatHelpers::log((object)[
                             'arah' => config('app.flow.rencana'),
-                            'draftcode' => $draftcode
+                            'draftcode' => $draftcode,
+                            'bidangid' => $current->bidang,
+                            'gudangid' => $gudang->id,
                         ], $rencana['logs']);
                     }
                 }
@@ -49,9 +53,12 @@ class FlowHelpers {
                         $flow->err = $stock['msg'];
                         return $flow;
                     } else {
+                        $gudang = Gudang::where('bidang_id', $current->bidang)->first();
                         $log = RiwayatHelpers::log((object)[
                             'arah' => config('app.flow.stock'),
-                            'draftcode' => $draftcode
+                            'draftcode' => $draftcode,
+                            'bidangid' => $current->bidang,
+                            'gudangid' => $gudang->id,
                         ], $stock['logs']);
                     }
                 }

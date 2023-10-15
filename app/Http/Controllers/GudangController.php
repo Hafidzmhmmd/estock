@@ -4,13 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Gudang;
+use App\Barang;
 use App\StockGudang;
 use App\RiwayatGudang;
+use App\ChangeLog;
 use App\Pengajuan;
 use App\PengajuanDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\RiwayatHelpers;
+use App\Http\Helpers\CounterHelpers;
+use App\Http\Helpers\StockHelpers;
 use Illuminate\Database\Eloquent\Builder;
 
 class GudangController extends Controller
@@ -43,6 +47,7 @@ class GudangController extends Controller
         {
             DB::transaction(function() use($request) {
                 foreach($request->takeout as $key => $value){
+                    $logs = [];
                     foreach($value as $item){
                         $find = StockGudang::where('gudang_id', $key)->where('barang_id', $item['barang_id'])->where('stock','>',0);
                         $fCount = $find->count();
@@ -129,6 +134,20 @@ class GudangController extends Controller
                                 ]);
                             }
                         }
+
+                        if($log){;
+                            array_push($logs,$log);
+                        }
+                    }
+                    if(count($logs) > 0){
+                        $nomor = CounterHelpers::NomorPengambilan();
+                        $user = Auth::user();
+                        $log = RiwayatHelpers::log((object)[
+                            'arah' => config('app.flow.keluar'),
+                            'draftcode' => $nomor,
+                            'bidangid' => $user->bidang,
+                            'gudangid' => $key,
+                        ], $logs);
                     }
                 }
             });
@@ -143,15 +162,30 @@ class GudangController extends Controller
 
     public function riwayat(){
         $user = Auth::user();
-        $riwayat = RiwayatGudang::whereHas('hasPengajuan',function (Builder $query) use($user) {
-            $query->where('bidang', $user->bidang);
-        })->orderBy('created_at', 'desc')->paginate(10);
+        $gudang = Gudang::where('bidang_id', $user->bidang)->first();
+        $riwayat = RiwayatGudang::where('gudangid', $gudang->id)->where('bidangid', $user->bidang)->orderBy('id', 'desc')->paginate(10);
         return response()->json($riwayat);
     }
 
     public function riwayatDetails(Request $request){
-        $data['details'] = PengajuanDetail::where('draftcode', $request->draftcode)->get();
-
+        $riwayat = RiwayatGudang::find($request->id);
+        if($riwayat->arah == 3){
+            $record = ChangeLog::where('riwayat_id', $riwayat->id)->get();
+            $arr = [];
+            foreach ($record as $rec){
+                $barang = Barang::find($rec->barangid);
+                $avg_satuan = StockHelpers::hargaBarangGudang($rec->barangid);
+                $arr[] = [
+                    'nama_barang' => $barang->uraian,
+                    'jumlah_barang' => $rec->jumlah,
+                    'satuan' => $barang->satuan,
+                    'total_harga' => $avg_satuan * $rec->jumlah
+                ];
+            }
+            $data['details'] = $arr;
+        } else {
+            $data['details'] = PengajuanDetail::where('draftcode', $riwayat->draftcode)->get();
+        }
 
         return response()->json($data);
     }

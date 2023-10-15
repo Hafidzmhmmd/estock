@@ -22,5 +22,20 @@
             'X-CSRF-TOKEN': '{{csrf_token()}}'
         }
     });
+
+    function ajaxLoader(text){
+        let txt = text ?? 'Memproses...'
+        swal({
+            title: `<i class="fa fa-spinner fa-spin"></i>`,
+            text: txt,
+            html: true,
+            showCancelButton: false,
+            showConfirmButton: false,
+        });
+    }
+
+    function closeAjaxLoader(){
+        swal.close()
+    }
 </script>
 @stack('js')

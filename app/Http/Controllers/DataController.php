@@ -14,6 +14,8 @@ use App\Pengajuan;
 use App\PengajuanDetail;
 use App\StockGudang;
 use App\Flow;
+use App\User;
+use App\UserBidang;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -66,6 +68,20 @@ class DataController extends Controller
             $data = $data->where('id_pemohon', $user->id);
         }
         return Datatables::of($data)
+        ->editColumn('info', function($data)
+        {
+            $pemohon = User::find($data->id_pemohon);
+            $bidang = UserBidang::find($data->bidang);
+            try {
+
+                return [
+                    'pemohon' => $pemohon,
+                    'bidang' => $bidang,
+                ];
+            } catch(Exception $e) {
+                return null;
+            }
+        })
         ->editColumn('flow_name', function($data)
         {
             $fn = Flow::find($data->flow);

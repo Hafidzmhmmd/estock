@@ -67,6 +67,8 @@ class RiwayatHelpers
         $log->arah = $data->arah;
         $log->userid =  $user->id;
         $log->draftcode = $data->draftcode;
+        $log->gudangid = $data->gudangid;
+        $log->bidangid = $data->bidangid;
 
         if($log->save()){
             DB::table('stock_change_log')->whereIn('id', $changelog)
