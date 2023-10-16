@@ -45,6 +45,11 @@ Route::middleware(['access'])->group(function () {
         Route::get('stockgudangDataTables', 'DataController@stockgudangDataTables')->name('stockgudangDataTables');
     });
 
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('/transaksi', 'LaporanController@transaksi')->name('transaksi');
+        Route::get('/opname', 'LaporanController@transaksi')->name('opname');
+    });
+
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');
     Route::get('pdf/pengambilan','FileController@pdfPengambilan')->name('pdf.pengamnbilan');
 });
