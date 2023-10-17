@@ -160,10 +160,18 @@ class GudangController extends Controller
         return response()->json($resp);
     }
 
-    public function riwayat(){
+    public function riwayat(Request $request){
         $user = Auth::user();
-        $gudang = Gudang::where('bidang_id', $user->bidang)->first();
-        $riwayat = RiwayatGudang::where('gudangid', $gudang->id)->where('bidangid', $user->bidang)->orderBy('id', 'desc')->paginate(10);
+        $perpage = 10;
+        $riwayat = null;
+        if($request->gudang){
+            if($request->gudang == 'all'){
+                $gudang = Gudang::where('aktif', 1)->get()->pluck('id');
+                $riwayat = RiwayatGudang::whereIn('gudangid', $gudang)->orderBy('id', 'desc')->paginate($perpage);
+            } else {
+                $riwayat = RiwayatGudang::where('gudangid', $request->gudang)->orderBy('id', 'desc')->paginate($perpage);
+            }
+        }
         return response()->json($riwayat);
     }
 

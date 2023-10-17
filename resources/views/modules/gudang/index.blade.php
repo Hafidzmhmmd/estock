@@ -1,3 +1,7 @@
+@php
+    use App\Http\Helpers\AccessHelpers;
+@endphp
+
 @extends('_layouts.admin')
 
 @section('content')
@@ -6,7 +10,23 @@
             <div class="card">
                 <div class="body">
                     <div class="list-group list-widget">
-                        @foreach ($gudang as $g)
+                        @if(count($gudang) > 1)
+                        <div class="form-group">
+                            <label for="slc_gudang">Pilih Gudang</label>
+                            <select class="form-control" id="slc_gudang">
+                                <option value="all" selected>Semua Gudang</option>
+                                @foreach ($gudang as $g)
+                                    <option value='{{$g->id}}'>{{$g->nama_gudang}}</option>
+                                @endforeach
+                            </select>
+                          </div>
+                        @elseif(count($gudang) == 1)
+                            <a href="javascript:void(0);" class="list-group-item text-muted thisgudang"
+                                data-gudangid="{{ $gudang[0]->id }}">
+                                {{ $gudang[0]->nama_gudang }}
+                            </a>
+                        @endif
+                        {{-- @foreach ($gudang as $g)
                             @if ($loop->first)
                                 <a href="javascript:void(0);" class="list-group-item text-muted thisgudang"
                                     data-gudangid="{{ $g->id }}">
@@ -18,21 +38,23 @@
                                     {{ $g->nama_gudang }}
                                 </a>
                             @endif
-                        @endforeach
+                        @endforeach --}}
                     </div>
                 </div>
             </div>
-            <div class="card" id="takeoutHolder">
-                <h5 class="card-header">Pengambilan Barang</h5>
-                <div class="card-body">
-                    <div class="list-group list-widget" style="min-height: 200px; max-height:500px; overflow-y:auto">
+            @if (AccessHelpers::isPemohon())
+                <div class="card" id="takeoutHolder">
+                    <h5 class="card-header">Pengambilan Barang</h5>
+                    <div class="card-body">
+                        <div class="list-group list-widget" style="min-height: 200px; max-height:500px; overflow-y:auto">
 
+                        </div>
+                        <hr>
+                        <button type="button" class="btn btn-block btn-outline-primary" data-toggle="modal"
+                            data-target=".form-pengambilan">Proses</button>
                     </div>
-                    <hr>
-                    <button type="button" class="btn btn-block btn-outline-primary" data-toggle="modal"
-                        data-target=".form-pengambilan">Proses</button>
                 </div>
-            </div>
+            @endif
         </div>
         <div class="col-9">
             <div class="card">
@@ -41,10 +63,6 @@
                         <li class="nav-item"><a class="nav-link active show" data-toggle="tab" href="#list-barang">Stock
                                 Gudang</a></li>
                         <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#riwayat">Riwayat</a></li>
-                        @if ($pengelolaGudang)
-                            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#transfer">Transfer Stock</a>
-                            </li>
-                        @endif
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane show active" id="list-barang">
@@ -84,8 +102,9 @@
         </div>
     </div>
 
-
-    @include('modules.gudang.form.pengambilan')
+    @if (AccessHelpers::isPemohon())
+        @include('modules.gudang.form.pengambilan')
+    @endif
 @endsection
 
 
@@ -102,7 +121,11 @@
             "ajax": {
                 "url": "{{ route('data.stockgudangDataTables') }}",
                 data: function(d) {
-                    d.gudang_id = $('.thisgudang').attr('data-gudangid')
+                    @if (count($gudang) > 1)
+                        d.gudang_id = $('#slc_gudang').val()
+                    @elseif(count($gudang) == 1)
+                        d.gudang_id = $('.thisgudang').attr('data-gudangid')
+                    @endif
                 },
                 BeforeSend: function(){
                     alert()
@@ -153,10 +176,20 @@
                     render: function(data, type, full, meta) {
                         if (full.stock > 0) {
                             if(full.fifo){
-                                return `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>
-                                <button type="button" class="btn btn-outline-info" onclick="childRow(this)"><i class="icon-info"></i></button>`
-                            } else {
-                                return `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>`
+                                return
+                                @if (AccessHelpers::isPemohon())
+                                `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>` +
+                                @endif
+
+                                `<button type="button" class="btn btn-outline-info" onclick="childRow(this)"><i class="icon-info"></i></button>`
+                            }
+                            else {
+                                return ''
+                                @if (AccessHelpers::isPemohon())
+                                   + `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>`
+                                @else
+                                    + '-'
+                                @endif
                             }
 
                         } else {
@@ -190,6 +223,13 @@
                 closeAjaxLoader();
             }
         });
+
+        @if (count($gudang) > 1)
+            $('#slc_gudang').change(function(){
+                dtBarang.draw();
+                riwayatGudang()
+            })
+        @endif
 
         function takeout(elm) {
             let row = $(elm).closest('tr');
@@ -308,7 +348,13 @@
             $('#riwayat .loader').show();
             $('#riwayat ul.list-riwayat').html('')
             let page = p ?? 1;
-            let url = `{{ route('gudang.riwayat') }}?page=${page}`
+            let gudang = '';
+            @if (count($gudang) > 1)
+                gudang = $('#slc_gudang').val()
+            @elseif(count($gudang) == 1)
+                gudang = $('.thisgudang').attr('data-gudangid')
+            @endif
+            let url = `{{ route('gudang.riwayat') }}?page=${page}&gudang=${gudang}`
             $.get(url, function(resp, status){
                 if(status === 'success' && resp.data.length){
                     createRiwayat(resp.data, resp.last_page, resp.current_page)
@@ -416,14 +462,14 @@
         $('#riwayat ul.list-riwayat').on('click', '.pdfReport', function(event){
             let riwayat = $(this).closest('.riwayatRow').attr('data-riwayat');
             $.fancybox.open({
-            src  :  '{{env('APP_URL')}}/pdf/pengambilan?riwayat='+riwayat,
-            type : 'iframe',
-            opts : {
-                afterShow : function( instance, current ) {
+                src  :  '{{env('APP_URL')}}/pdf/pengambilan?riwayat='+riwayat,
+                type : 'iframe',
+                opts : {
+                    afterShow : function( instance, current ) {
 
+                    }
                 }
-            }
-        });
+            });
         })
     </script>
 @endpush

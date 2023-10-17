@@ -16,6 +16,7 @@ use App\StockGudang;
 use App\Flow;
 use App\User;
 use App\UserBidang;
+use App\Gudang;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -120,19 +121,20 @@ class DataController extends Controller
     public function stockgudangDataTables(Request $request){
         $user = Auth::user();
         $gudang_id = $request->gudang_id;
-        if(empty($gudang_id)){
-            if(in_array($user->role,config('app.akses.gudangall'))){
-                $data = DB::table('stock_gudang')->leftJoin('m_barang','stock_gudang.barang_id','=','m_barang.id');
-            }
+        if($gudang_id == 'all'){
+            $gudang_id = Gudang::where('aktif', 1)->get()->pluck('id');
         } else {
-            $data = DB::table(DB::raw('stock_gudang sg'))
-            ->select('sg.gudang_id','sg.barang_id',
-            DB::raw('SUM(sg.stock) as stock'),DB::raw('SUM(sg.rencana) as rencana'),DB::raw('GROUP_CONCAT(sg.draftcode) as draftcodes'),
-            'mb.uraian','mb.satuan','mb.harga_maksimum')
-            ->leftJoin(DB::raw('m_barang mb'),'sg.barang_id','=','mb.id')
-            ->where('sg.gudang_id', $gudang_id)->where('sg.stock','>',0)
-            ->groupBy('sg.barang_id', 'sg.gudang_id','mb.uraian','mb.satuan','mb.harga_maksimum');
+            $gudang_id = [$gudang_id];
         }
+
+        $data = DB::table(DB::raw('stock_gudang sg'))
+        ->select('sg.gudang_id','sg.barang_id',
+        DB::raw('SUM(sg.stock) as stock'),DB::raw('SUM(sg.rencana) as rencana'),DB::raw('GROUP_CONCAT(sg.draftcode) as draftcodes'),
+        'mb.uraian','mb.satuan','mb.harga_maksimum')
+        ->leftJoin(DB::raw('m_barang mb'),'sg.barang_id','=','mb.id')
+        ->whereIn('sg.gudang_id', $gudang_id)->where('sg.stock','>',0)
+        ->groupBy('sg.barang_id', 'sg.gudang_id','mb.uraian','mb.satuan','mb.harga_maksimum');
+
         if(isset($data)){
             return Datatables::of($data)
             ->editColumn('fifo', function($data)
