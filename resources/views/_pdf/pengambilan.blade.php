@@ -30,8 +30,7 @@
             <td scope="col" style="width:40%; text-align:right">
                 Tanggal : {{$detail->created_at}}
             </td>
-          </tr>
-        </thead>
+        </tr>
     </table>
     <br>
     <p class="center"> DAFTAR BARANG</p>

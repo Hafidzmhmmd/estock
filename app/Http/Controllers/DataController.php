@@ -156,6 +156,11 @@ class DataController extends Controller
                     return null;
                 }
             })
+            ->addColumn('nama_gudang', function($data)
+            {
+                $nama_gudang = Gudang::where('id', $data->gudang_id)->pluck('nama_gudang');
+                return $nama_gudang[0] ?? '';
+            })
             ->toJson();
         } else {
             return null;

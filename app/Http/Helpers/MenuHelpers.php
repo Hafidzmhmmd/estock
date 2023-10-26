@@ -40,7 +40,6 @@ class MenuHelpers {
                 }
             }
         }
-
         return $usermenu;
     }
 }

@@ -46,8 +46,11 @@ Route::middleware(['access'])->group(function () {
     });
 
     Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/transaksi', 'LaporanController@transaksi')->name('transaksi');
-        Route::get('/opname', 'LaporanController@transaksi')->name('opname');
+        Route::prefix('transaksi')->name('transaksi.')->group(function () {
+            Route::get('/', 'LaporanController@transaksi')->name('index');
+        });
+        Route::get('/opname', 'LaporanController@opname')->name('opname');
+        Route::post('/opname', 'LaporanController@createOpname');
     });
 
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');

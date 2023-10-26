@@ -26,20 +26,12 @@
                                 {{ $gudang[0]->nama_gudang }}
                             </a>
                         @endif
-                        {{-- @foreach ($gudang as $g)
-                            @if ($loop->first)
-                                <a href="javascript:void(0);" class="list-group-item text-muted thisgudang"
-                                    data-gudangid="{{ $g->id }}">
-                                    {{ $g->nama_gudang }}
-                                </a>
-                            @else
-                                <a href="javascript:void(0);" class="list-group-item text-muted"
-                                    data-gudangid="{{ $g->id }}">
-                                    {{ $g->nama_gudang }}
-                                </a>
-                            @endif
-                        @endforeach --}}
                     </div>
+                    @if (AccessHelpers::isPengelolaBMN())
+                    <div class="card m-1">
+                        <button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#transferModal">Transfer Barang</button>
+                    </div>
+                    @endif
                 </div>
             </div>
             @if (AccessHelpers::isPemohon())
@@ -75,6 +67,9 @@
                                             <th>Stock</th>
                                             <th>Total</th>
                                             <th>Satuan</th>
+                                            @if (AccessHelpers::isPengelolaBMN())
+                                            <th>Gudang</th>
+                                            @endif
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -91,11 +86,6 @@
                             <ul class="pagination justify-content-center">
                               </ul>
                         </div>
-                        @if ($pengelolaGudang)
-                            <div class="tab-pane" id="transfer">
-
-                            </div>
-                        @endif
                     </div>
                 </div>
             </div>
@@ -104,6 +94,28 @@
 
     @if (AccessHelpers::isPemohon())
         @include('modules.gudang.form.pengambilan')
+    @endif
+
+    @if (AccessHelpers::isPengelolaBMN())
+    <div class="modal fade" id="transferModal" tabindex="-1" role="dialog" aria-labelledby="transferModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="transferModalLabel">Modal title</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
     @endif
 @endsection
 
@@ -151,6 +163,11 @@
                 {
                     data: 'satuan'
                 },
+                @if (AccessHelpers::isPengelolaBMN())
+                {
+                    data: 'nama_gudang'
+                },
+                @endif
                 {
                     data: ''
                 },
@@ -176,12 +193,11 @@
                     render: function(data, type, full, meta) {
                         if (full.stock > 0) {
                             if(full.fifo){
-                                return
+                                return ''
                                 @if (AccessHelpers::isPemohon())
-                                `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>` +
+                                `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>`
                                 @endif
-
-                                `<button type="button" class="btn btn-outline-info" onclick="childRow(this)"><i class="icon-info"></i></button>`
+                                 + `<button type="button" class="btn btn-outline-info" onclick="childRow(this)"><i class="icon-info"></i></button>`
                             }
                             else {
                                 return ''

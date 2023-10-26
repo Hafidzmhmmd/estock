@@ -24,16 +24,18 @@ $currentRoute = Route::currentRouteName();
                         <li class="{{$active}}"><a href="#uiElements" class="has-arrow"><i class="icon-energy"></i><span>{{$key}}</span></a><ul>
                         @foreach ($value as $menu=>$route)
                             @php
-                                $active = $route == $currentRoute ? 'active' : ''
+                                $active = $route == $currentRoute ? 'active' : '';
+                                $getRoute = Route::has(@$route) ? route($route) : '';
                             @endphp
-                            <li class="{{$active}}"><a href="{{route($route)}}">{{$menu}}</a></li>
+                            <li class="{{$active}}"><a href="{{$getRoute}}">{{$menu}}</a></li>
                         @endforeach
                         </ul></li>
                     @else
                         @php
-                            $active = $value == $currentRoute ? 'active' : ''
+                            $active = $value == $currentRoute ? 'active' : '';
+                            $getRoute = Route::has(@$value) ? route($value) : '';
                         @endphp
-                        <li class="{{$active}}"><a href="{{route($value)}}"><i class="icon-home"></i><span>{{$key}}</span></a></li>
+                        <li class="{{$active}}"><a href="{{$getRoute}}"><i class="icon-home"></i><span>{{$key}}</span></a></li>
                     @endif
                 @endforeach
             </ul>

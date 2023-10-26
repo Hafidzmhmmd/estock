@@ -27,14 +27,10 @@ class GudangController extends Controller
         $data['pengelolaGudang'] = false;
         if(!in_array($user->role,config('app.akses.gudangall'))){
             $gudang = $gudang->where('bidang_id', $user->bidang);
-            // $riwayat =  $riwayat->whereHas('hasStockId.hasBarang', function (Builder $query) {
-            //     $query->where('gudang_id', '=', '1');
-            // });
         } else {
             $data['pengelolaGudang'] = true;
         }
         $data['gudang'] = $gudang->get();
-        // $data['riwayat'] = $riwayat->orderBy('created_at','desc')->get();
         return view('modules.gudang.index',$data);
     }
 
