@@ -14,7 +14,7 @@
         </div>
         <h5 class="card-title py-2 m-0">Laporan Opname<b></b>
         </h5>
-        <hr>
+        {{-- <hr>
         <div class="pb-3">
             <div class="form-row">
                 <div class="col px-3">
@@ -36,26 +36,18 @@
                     <input type="text" class="form-control" placeholder="Judul Laporan">
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 </div>
 <div class="card p-4">
-    <table class="table table-striped">
+    <table class="table table-striped" id="tblLaporan">
         <thead>
           <tr>
-            <th scope="col">#</th>
-            <th scope="col">Judul Laporan</th>
             <th scope="col">Tanggal Dibuat</th>
             <th scope="col">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>@mdo</td>
-          </tr>
         </tbody>
       </table>
 </div>
@@ -164,9 +156,81 @@
             contentType: false,
             type: 'POST',
             success: function (response) {
-                console.log(response)
+                if(response.status){
+                    $('#modalCreate').modal('hide');
+                    dt.ajax.reload();
+                }
             }
         });
     })
+
+    var dt = $('#tblLaporan').DataTable({
+        processing: true,
+        serverSide: true,
+        "ajax": {
+            "url": "{{ route('laporan.listOpname') }}",
+        },
+        fnDrawCallback: function() {
+            closeAjaxLoader();
+        },
+        columns: [
+            {
+                data: 'created_at'
+            },
+            {
+                data: '',
+                class: 'text-center'
+            },
+        ],
+        columnDefs: [
+            {
+                // Actions
+                targets: -1,
+                title: 'Actions',
+                orderable: false,
+                render: function(data, type, full, meta) {
+                    return (`
+                    <button class="btn btn-warning btn-sm" onclick="viewLaporan('${full.path}')"><i class="fa fa-file-pdf-o"></i></button>
+                    `);
+                }
+            }
+        ],
+        order: [
+            [1, 'asc']
+        ],
+        dom: '<"d-flex justify-content-between align-items-center header-actions mx-1 row mt-75"' +
+            '<"col-lg-12 col-xl-6" l>' +
+            '<"col-lg-12 col-xl-6 pl-xl-75 pl-0"<"dt-action-buttons text-xl-right text-lg-left text-md-right text-left d-flex align-items-center justify-content-lg-end align-items-center flex-sm-nowrap flex-wrap mr-1"<"mr-1"f>>>' +
+            '>t' +
+            '<"d-flex justify-content-between mx-2 row mb-1"' +
+            '<"col-sm-12 col-md-6"i>' +
+            '<"col-sm-12 col-md-6"p>' +
+            '>',
+        language: {
+            sLengthMenu: 'Show _MENU_',
+            search: '',
+            searchPlaceholder: 'Search..',
+            paginate: {
+                // remove previous & next text from pagination
+                previous: '&nbsp;',
+                next: '&nbsp;'
+            }
+        },
+        initComplete: function() {
+
+        }
+    });
+
+    function viewLaporan(path){
+        $.fancybox.open({
+            src  :  '{{env('APP_URL')}}/getfile/'+path,
+            type : 'iframe',
+            opts : {
+                afterShow : function( instance, current ) {
+
+                }
+            }
+        });
+    }
 </script>
 @endpush

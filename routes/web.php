@@ -51,6 +51,7 @@ Route::middleware(['access'])->group(function () {
         });
         Route::get('/opname', 'LaporanController@opname')->name('opname');
         Route::post('/opname', 'LaporanController@createOpname');
+        Route::get('/opname/list', 'LaporanController@listOpname')->name('listOpname');
     });
 
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');
