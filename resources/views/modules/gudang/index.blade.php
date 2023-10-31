@@ -195,7 +195,7 @@
                             if(full.fifo){
                                 return ''
                                 @if (AccessHelpers::isPemohon())
-                                `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>`
+                                + `<button type="button" class="btn btn-primary" onclick="takeout(this)"><i class="icon-plus"></i></button>`
                                 @endif
                                  + `<button type="button" class="btn btn-outline-info" onclick="childRow(this)"><i class="icon-info"></i></button>`
                             }
