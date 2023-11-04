@@ -143,7 +143,8 @@ class DataController extends Controller
                 if(count($list) >  1){
                     $arr = [];
                     foreach ($list as $dc){
-                        $fn = StockGudang::where('draftcode', $dc)->where('gudang_id', $data->gudang_id)->orderBy('created_at', 'asc')->first();
+                        $fn = StockGudang::where('draftcode', $dc)->where('barang_id', $data->barang_id)
+                        ->where('gudang_id', $data->gudang_id)->orderBy('created_at', 'asc')->first();
                         $arr[$dc] = [
                             'rencana' => $fn->rencana,
                             'stock' => $fn->stock,

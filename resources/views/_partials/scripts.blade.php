@@ -37,5 +37,6 @@
     function closeAjaxLoader(){
         swal.close()
     }
+    $.fn.modal.Constructor.prototype._enforceFocus = function() {};
 </script>
 @stack('js')

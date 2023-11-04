@@ -193,4 +193,161 @@ class GudangController extends Controller
 
         return response()->json($data);
     }
+
+    public function transferBarang(Request $request){
+        $asalGudang = $request->asalGudang;
+        $tujuanGudang = $request->tujuanGudang;
+        $barangId = $request->barangId;
+        $jumlah = $request->jumlah;
+        $trans = DB::transaction(function() use($asalGudang, $tujuanGudang, $barangId, $jumlah) {
+            $logs = [];
+            $find = StockGudang::where('gudang_id', $asalGudang)->where('barang_id', $barangId)->where('stock','>',0);
+            $fCount = $find->count();
+            if($fCount == 1){
+                $data = $find->first();
+                $before = $data->stock;
+                $stock = intval($before) - intval($jumlah);
+                if($stock >= 0){
+                    $data->stock = $stock;
+                    $data->save();
+
+                    $log = RiwayatHelpers::changeLog((object)[
+                        'gudangid' => $asalGudang,
+                        'barangid' => $barangId,
+                        'before' => $before,
+                        'after' => $stock,
+                        'draftcode' => $data->draftcode,
+                        'stock_id' => $data->stock_id,
+                        'keterangan' => 'transfer barang [keluar]',
+                        'jumlah' => $jumlah,
+                        'status' => 1,
+                    ]);
+                    array_push($logs,$log);
+
+                    $find = StockGudang::where('gudang_id', $tujuanGudang)->where('barang_id', $barangId)->where('draftcode',$data->draftcode);
+                    $fCount = $find->count();
+                    $dc =  $data->draftcode;
+                    if($fCount){
+                        $tujuan = $find->first();
+                        $before = $tujuan->stock;
+                        $tujuan->stock = intval($before) + intval($jumlah);
+                        $tujuan->save();
+                    } else {
+                        $tujuan = StockGudang::create([
+                            'gudang_id' => $tujuanGudang,
+                            'barang_id' => $barangId,
+                            'rencana' => 0,
+                            'stock' => $jumlah,
+                            'draftcode' => $dc,
+                        ]);
+                    }
+
+                    $log = RiwayatHelpers::changeLog((object)[
+                        'gudangid' => $tujuanGudang,
+                        'barangid' => $barangId,
+                        'before' => $before,
+                        'after' => $tujuan->stock,
+                        'draftcode' => $dc,
+                        'stock_id' => $tujuan->stock_id,
+                        'keterangan' => 'transfer barang [masuk]',
+                        'jumlah' => $jumlah,
+                        'status' => 1,
+                    ]);
+                    array_push($logs,$log);
+                }
+            }
+            else if($fCount >= 1){
+                $datas = $find->orderBy('created_at','asc')->get();
+                $totalJumlah = $find->sum('stock');
+                $jumlahTake = $jumlah;
+                if($jumlahTake >= 0 && $jumlahTake <= $totalJumlah){
+                    foreach($datas as $data){
+                        if($jumlahTake != 0){
+                            $before = $data->stock;
+                            $stock = intval($before) - intval($jumlahTake);
+                            $take = intval($jumlahTake);
+                            if($stock >= 0){
+                                $data->stock = $stock;
+                                $jumlahTake = 0;
+                            }
+                            else if($stock < 0){
+                                $take = $before;
+                                $jumlahTake = $stock * -1;
+                                $stock = 0;
+                                $data->stock = $stock;
+                            }
+                            $data->save();
+
+                            $log = RiwayatHelpers::changeLog((object)[
+                                'gudangid' => $asalGudang,
+                                'barangid' => $barangId,
+                                'before' => $before,
+                                'after' => $stock,
+                                'draftcode' => $data->draftcode,
+                                'stock_id' => $data->stock_id,
+                                'keterangan' => 'transfer barang [keluar]',
+                                'jumlah' => $take,
+                                'status' => 1,
+                            ]);
+                            array_push($logs,$log);
+
+                            $find = StockGudang::where('gudang_id', $tujuanGudang)->where('barang_id', $barangId)->where('draftcode',$data->draftcode);
+                            $fCount = $find->count();
+                            $dc =  $data->draftcode;
+                            if($fCount){
+                                $tujuan = $find->first();
+                                $before = $tujuan->stock;
+                                $tujuan->stock = intval($before) + intval($take);
+                                $tujuan->save();
+                            } else {
+                                $tujuan = StockGudang::create([
+                                    'gudang_id' => $tujuanGudang,
+                                    'barang_id' => $barangId,
+                                    'rencana' => 0,
+                                    'stock' => $take,
+                                    'draftcode' => $dc,
+                                ]);
+                            }
+
+                            $log = RiwayatHelpers::changeLog((object)[
+                                'gudangid' => $tujuanGudang,
+                                'barangid' => $barangId,
+                                'before' => $before,
+                                'after' => $tujuan->stock,
+                                'draftcode' => $dc,
+                                'stock_id' => $tujuan->stock_id,
+                                'keterangan' => 'transfer barang [masuk]',
+                                'jumlah' => $take,
+                                'status' => 1,
+                            ]);
+                            array_push($logs,$log);
+                        }
+                    }
+                }
+            }
+
+            $tr = false;
+            if(count($logs) > 0){
+                $user = Auth::user();
+                $log = RiwayatHelpers::log((object)[
+                    'arah' => config('app.flow.transfer'),
+                    'draftcode' => "$barangId|$asalGudang|$tujuanGudang|$jumlah",
+                    'bidangid' => $user->bidang,
+                    'gudangid' => $asalGudang,
+                ], $logs);
+                $tr = true;
+            }
+            return $tr;
+        });
+        if($trans){
+            return response()->json([
+                'status' => true
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'gagal melakukan transfer barang'
+            ]);
+        }
+    }
 }

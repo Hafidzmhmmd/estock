@@ -97,28 +97,9 @@
     @endif
 
     @if (AccessHelpers::isPengelolaBMN())
-    <div class="modal fade" id="transferModal" tabindex="-1" role="dialog" aria-labelledby="transferModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title" id="transferModalLabel">Modal title</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary">Save changes</button>
-            </div>
-          </div>
-        </div>
-      </div>
+        @include('modules.gudang.form.transfer', $gudang)
     @endif
 @endsection
-
 
 @push('js')
     <script>
@@ -138,9 +119,6 @@
                     @elseif(count($gudang) == 1)
                         d.gudang_id = $('.thisgudang').attr('data-gudangid')
                     @endif
-                },
-                BeforeSend: function(){
-                    alert()
                 },
             },
             fnDrawCallback: function() {
@@ -397,6 +375,11 @@
                 color : 'danger',
                 title : 'Pengambilan Stock',
                 extra : `<small class="float-right badge badge-primary badge-pill pdfReport"><i class='fa fa-file-pdf-o'></i> PDF</small>`,
+            },
+            4 : {
+                icon : 'icon-arrow-up',
+                color : 'danger',
+                title : 'Transfer Stock',
             },
         }
 
