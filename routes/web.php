@@ -44,6 +44,7 @@ Route::middleware(['access'])->group(function () {
         Route::get('pengajuanDataTables', 'DataController@pengajuanDataTables')->name('pengajuanDataTables');
         Route::get('pengajuandetailDataTables', 'DataController@pengajuandetailDataTables')->name('pengajuandetailDataTables');
         Route::get('stockgudangDataTables', 'DataController@stockgudangDataTables')->name('stockgudangDataTables');
+        Route::get('grafikDashboard', 'DataController@grafikDashboard')->name('grafikDashboard');
     });
 
     Route::prefix('laporan')->name('laporan.')->group(function () {

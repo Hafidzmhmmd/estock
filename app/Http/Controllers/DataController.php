@@ -167,4 +167,12 @@ class DataController extends Controller
             return null;
         }
     }
+
+    public function grafikDashboard(Request $request){
+        $in =  Pengajuan::select(DB::raw('SUM(total_keseluruhan) pengajuan, YEAR(tgl_disetujui) year, MONTH(tgl_disetujui) month'))
+        ->whereNotNull('tgl_disetujui')
+        ->groupby('year','month')
+        ->get();
+        return response()->json(compact('in'));
+    }
 }
