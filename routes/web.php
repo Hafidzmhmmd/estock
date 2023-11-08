@@ -33,6 +33,7 @@ Route::middleware(['access'])->group(function () {
     Route::prefix('gudang')->name('gudang.')->group(function () {
         Route::get('/', 'GudangController@index')->name('index');
         Route::post('/', 'GudangController@takeout')->name('takeout');
+        Route::post('/transfer', 'GudangController@transferBarang')->name('transfer');
         Route::get('/riwayat', 'GudangController@riwayat')->name('riwayat');
         Route::post('/riwayatDetails', 'GudangController@riwayatDetails')->name('riwayatDetails');
     });
@@ -96,6 +97,7 @@ Route::middleware(['access'])->group(function () {
         Route::get('pengajuanDataTables', 'DataController@pengajuanDataTables')->name('pengajuanDataTables');
         Route::get('pengajuandetailDataTables', 'DataController@pengajuandetailDataTables')->name('pengajuandetailDataTables');
         Route::get('stockgudangDataTables', 'DataController@stockgudangDataTables')->name('stockgudangDataTables');
+        Route::get('grafikDashboard', 'DataController@grafikDashboard')->name('grafikDashboard');
     });
 
 
@@ -105,6 +107,7 @@ Route::middleware(['access'])->group(function () {
         });
         Route::get('/opname', 'LaporanController@opname')->name('opname');
         Route::post('/opname', 'LaporanController@createOpname');
+        Route::get('/opname/list', 'LaporanController@listOpname')->name('listOpname');
     });
 
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');

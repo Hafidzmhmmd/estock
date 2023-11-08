@@ -19,6 +19,14 @@ class StockGudang extends Model
      */
     protected $primaryKey = 'stock_id';
 
+    protected $fillable = [
+        'gudang_id',
+        'barang_id',
+        'rencana',
+        'stock',
+        'draftcode'
+    ];
+
     public function hasBarang()
     {
         return $this->belongsTo('App\Barang', 'barang_id', 'id');

@@ -19,6 +19,7 @@ use App\User;
 use App\UserBidang;
 use App\Gudang;
 use App\RoleUser;
+use Exception;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -228,7 +229,8 @@ class DataController extends Controller
                 if(count($list) >  1){
                     $arr = [];
                     foreach ($list as $dc){
-                        $fn = StockGudang::where('draftcode', $dc)->where('gudang_id', $data->gudang_id)->orderBy('created_at', 'asc')->first();
+                        $fn = StockGudang::where('draftcode', $dc)->where('barang_id', $data->barang_id)
+                        ->where('gudang_id', $data->gudang_id)->orderBy('created_at', 'asc')->first();
                         $arr[$dc] = [
                             'rencana' => $fn->rencana,
                             'stock' => $fn->stock,
@@ -250,5 +252,12 @@ class DataController extends Controller
         } else {
             return null;
         }
+    }
+    public function grafikDashboard(Request $request){
+        $in =  Pengajuan::select(DB::raw('SUM(total_keseluruhan) pengajuan, YEAR(tgl_disetujui) year, MONTH(tgl_disetujui) month'))
+        ->whereNotNull('tgl_disetujui')
+        ->groupby('year','month')
+        ->get();
+        return response()->json(compact('in'));
     }
 }
