@@ -25,13 +25,14 @@
     });
 
     function ajaxLoader(text){
-        let txt = text ?? 'Memproses...'
-        swal({
-            title: `<i class="fa fa-spinner fa-spin"></i>`,
+        let txt = text ?? 'Memproses....'
+        Swal.fire({
             text: txt,
-            html: true,
-            showCancelButton: false,
-            showConfirmButton: false,
+            allowOutsideClick: false,
+            timerProgressBar: true,
+            didOpen: () => {
+                Swal.showLoading();
+            },
         });
     }
 

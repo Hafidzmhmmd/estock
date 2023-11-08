@@ -73,10 +73,9 @@
         function takeout_proccess() {
             let ct = $("#takeoutSum tbody tr").length;
             if (ct) {
-                swal({
+                Swal.fire({
                     title: `<i class="fa fa-spinner fa-spin"></i>`,
                     text: "Memproses pengambilan...",
-                    html: true,
                     showCancelButton: false,
                     showConfirmButton: false,
                 });
@@ -100,13 +99,21 @@
                     },
                     function(data, status) {
                         if (data.status) {
-                            swal("Berhasil!", "proses pengambilan barang berhasil di catat", "success")
+                            Swal.fire({
+                                title: "Berhasil!",
+                                text: "proses pengambilan barang berhasil di catat",
+                                icon: "success"
+                            });
                             $('.form-pengambilan').modal('hide')
                             dtBarang.draw();
                             riwayatGudang()
                             $("#takeoutHolder .card-body .list-group").html('')
                         } else {
-                            swal("Gagal!", "gagal melakukan pengambilan barang!", "warning")
+                            Swal.fire({
+                                title: "Gagal!",
+                                text: "gagal melakukan pengambilan barang!",
+                                icon: "warning"
+                            });
                         };
                     });
             }

@@ -7,8 +7,12 @@ use Illuminate\Support\Facades\Auth;
 
 use App\Gudang;
 use App\RiwayatGudang;
-use App\SubSubKelompok;
 use App\Barang;
+use App\KelompokBarang;
+use App\Pengajuan;
+use App\PengajuanDetail;
+use App\SubKelompok;
+use App\SubSubKelompok;
 use App\LaporanCreate;
 use App\StockGudang;
 use Carbon\Carbon;
@@ -119,5 +123,13 @@ class LaporanController extends Controller
     function listOpname(){
         $data = LaporanCreate::all();
         return Datatables::of($data)->toJson();
+    }
+
+    public function bukuPersediaan(){
+        $subsubkelompok = SubSubKelompok::all();
+        $kelompok_barang = KelompokBarang::all();
+        $subkelompok = SubKelompok::all();
+        $gudang = Gudang::where('aktif', 1)->get()->pluck('id', 'nama_gudang');
+        return view('modules.laporan.bukupersediaan.index', compact('gudang', 'subsubkelompok', 'kelompok_barang', 'subkelompok'));
     }
 }

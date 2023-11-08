@@ -332,7 +332,12 @@
                 } else {
                     label.show()
                     $(this).hide()
-                    swal('Warning', 'Jumlah melebihi stock yang tersedia', 'warning')
+                    Swal.fire({
+                        title: 'Warning!',
+                        text: 'Jumlah melebihi stock yang tersedia',
+                        icon: 'warning',
+                        confirmButtonText: 'Cool'
+                    })
                 }
 
             }

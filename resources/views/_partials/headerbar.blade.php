@@ -1,6 +1,6 @@
 @php use App\Helpers\Utils;use Illuminate\Support\Facades\Auth; @endphp
 
-<nav class="navbar navbar-fixed-top">
+<nav class="navbar navbar-fixed-top py-3">
     <div class="container-fluid">
 
         <div class="navbar-left">
@@ -14,10 +14,10 @@
         <div class="navbar-right">
             <div id="navbar-menu">
                 <ul class="nav navbar-nav">
-                    <li class="dropdown dropdown-animated scale-left">
+                    {{-- <li class="dropdown dropdown-animated scale-left">
                         <a href="javascript:void(0);" class="dropdown-toggle icon-menu" data-toggle="dropdown">
                             <i class="icon-bell"></i>
-                            {{-- <span class="notification-dot"></span> --}}
+                            <span class="notification-dot"></span>
                             <span class="notification"></span>
                         </a>
                         <ul class="dropdown-menu feeds_widget">
@@ -68,15 +68,15 @@
                                 </a>
                             </li>
                         </ul>
-                    </li>
+                    </li> --}}
                     <li class="user-account text-light">
                         <div class="dropdown m-0">
                             <a href="javascript:void(0);" class="dropdown-toggle user-name" data-toggle="dropdown" aria-expanded="false"><strong>{{ Auth::user()->name }}</strong></a>
                             <ul class="dropdown-menu dropdown-menu-right account" style="will-change: transform; top: 80%;">
-                                <li><a href="page-profile.html"><i class="icon-user"></i>My Profile</a></li>
+                                {{-- <li><a href="page-profile.html"><i class="icon-user"></i>My Profile</a></li>
                                 <li><a href="app-inbox.html"><i class="icon-envelope-open"></i>Messages</a></li>
-                                <li><a href="javascript:void(0);"><i class="icon-settings"></i>Settings</a></li>
-                                <li class="divider"></li>
+                                <li><a href="javascript:void(0);"><i class="icon-settings"></i>Settings</a></li> --}}
+                                {{-- <li class="divider"></li> --}}
                                 <li><a href="{{route('logout')}}"><i class="icon-power"></i>Logout</a></li>
                             </ul>
                         </div>

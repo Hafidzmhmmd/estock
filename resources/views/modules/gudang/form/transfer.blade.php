@@ -221,55 +221,79 @@
 
     }
 
+
+
     function transferThis(elm, src){
         let fromGudang = $(`.slc-gudang-transfer[data-tbltarget = '${src}']`).val();
         let toGudang = $(`.slc-gudang-transfer[data-tbltarget != '${src}']`).val();
         let row = $(elm).closest('tr');
         let data = createdDt[src].row(row).data();
-        console.log(data)
-        if(fromGudang && toGudang){
-            swal({
-                title: "Jumlah Transfer",
-                text: "Write something interesting:",
-                type: "input",
-                showCancelButton: true,
-                closeOnConfirm: false,
-                animation: "slide-from-top",
-                inputPlaceholder: "Write something"
-            },
-            function(inputValue){
-                if (inputValue === null) return false;
 
-                if (inputValue === "") {
-                    swal('Warning', 'Masukan Jumlah!', 'warning')
-                    return false
-                }
-                ajaxLoader();
-                $.ajax({
-                    type: "POST",
-                    url: "{{route('gudang.transfer')}}",
-                    data: {
-                        asalGudang : fromGudang,
-                        tujuanGudang : toGudang,
-                        barangId : data.barang_id,
-                        jumlah : inputValue
-                    },
-                    success: function(response){
-                        if(response.status){
-                            swal('Berhasil', 'Transfer barang berhasil', 'success')
-                            Object.keys(createdDt).forEach(dt => {
-                                if(createdDt[dt]){
-                                    createdDt[dt].ajax.reload( null, false);
-                                }
-                            })
-                        } else {
-                            swal('Warning', response.message, 'warning')
+        let frm = new FormData()
+        frm.append('asalGudang', fromGudang)
+        frm.append('tujuanGudang', toGudang)
+        frm.append('barangId',  data.barang_id)
+        if(fromGudang && toGudang){
+            Swal.fire({
+                text: 'Masukan jumlah transfer',
+                input: 'number',
+                showLoaderOnConfirm: true,
+                allowOutsideClick: () => !Swal.isLoading(),
+                preConfirm: async (inputValue) => {
+                    try {
+                        if(!inputValue) return Swal.showValidationMessage(`
+                            Masukan jumlah
+                        `);
+                        frm.append('jumlah', inputValue)
+                        const response = await fetch("{{route('gudang.transfer')}}", {
+                            method: "POST",
+                            headers: {
+                                'X-CSRF-TOKEN': '{{csrf_token()}}',
+                            },
+                            credentials: "same-origin",
+                            body: frm
+                        });
+                        if (!response.ok) {
+                            return Swal.showValidationMessage(`
+                                ${JSON.stringify(await response.json())}
+                            `);
                         }
+                        return response.json();
                     }
-                })
-            });
+                    catch (error) {
+                        Swal.showValidationMessage(`
+                            Request failed: ${error}
+                        `);
+                    }
+                }
+            }).then(function(result) {
+                if (result.value.status) {
+                    Object.keys(createdDt).forEach(dt => {
+                        if(createdDt[dt]){
+                            createdDt[dt].ajax.reload( null, false);
+                        }
+                    })
+
+                    Swal.fire({
+                        title: "Berhasil",
+                        text: 'Transfer barang berhasil',
+                        icon: "success",
+                    });
+
+                } else {
+                    Swal.fire({
+                        title: "Warning",
+                        text: "Masukan Jumlah!",
+                        icon: "warning"
+                    });
+                }
+            })
         } else {
-            swal('Warning', 'Pilih asal gudang dan tujuan gudang', 'warning')
+            Swal.fire({
+                title: "Warning",
+                text: 'Pilih asal gudang dan tujuan gudang',
+                icon: "warning"
+            });
         }
     }
  </script>

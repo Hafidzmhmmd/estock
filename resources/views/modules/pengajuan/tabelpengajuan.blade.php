@@ -232,19 +232,27 @@
         if(lanjut && inputPenyedia){
             let np = $('#nama_penyedia').val()
             if(!np){
-                swal('Warning', 'Masukan Nama Penyedia', 'warning')
+                Swal.fire({
+                    title: "Warning",
+                    text: 'Masukan Nama Penyedia',
+                    icon: "warning"
+                });
                 return false
             } else {
                 formData.append('nama_penyedia', np);
                 if ($('#faktur_pembeilian').get(0).files.length !== 0){
                     formData.append('faktur', $('#faktur_pembeilian')[0].files[0]);
                 } else {
-                    swal('Warning', 'Mohon upload faktur pembelian', 'warning')
+                    Swal.fire({
+                        title: "Warning",
+                        text:  'Mohon upload faktur pembelian',
+                        icon: "warning"
+                    });
                     return false
                 }
             }
         }
-        swal({
+        Swal.fire({
             title: titel,
             text: text,
             type: type,
@@ -252,8 +260,8 @@
             confirmButtonColor: "#28a745",
             confirmButtonText: "Ya, Setujui",
             cancelButtonText: "Batal"
-            }, function (isConfirm) {
-                if (isConfirm) {
+            }).then(function (result) {
+                if (result.isConfirmed) {
                     $.ajax({
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -267,15 +275,20 @@
                         success: function(resp) {
                             if(resp.status == true){
                                 $('.modal-detail').modal('hide');
-                                swal({
-                                    title: "Success",
-                                    text: resp.message,
-                                    type: "success"
-                                }, function(){
+                                Swal.fire({
+                                    title: 'Success',
+                                    text:  resp.message,
+                                    icon: "success",
+                                    timer: 1000
+                                }).then(function() {
                                     dtPengajuan.ajax.reload();
-                                });
+                                })
                             } else{
-                                swal('Error', resp.message, 'info')
+                                Swal.fire({
+                                    title: "Error",
+                                    text:  resp.message,
+                                    icon: "error"
+                                });
                             }
                         }
                     });
@@ -438,7 +451,7 @@
             $('body').on('click', '.hapusDraft', function (e) {
                 e.preventDefault();
                 let draftcode = $(this).data('id');
-                swal({
+                Swal.fire({
                     title: "Apakah yakin?",
                     text: "Anda akan menghapus draft pengajuan",
                     type: "warning",
@@ -446,8 +459,8 @@
                     confirmButtonColor: "#dc3545",
                     confirmButtonText: "Ya, Hapus",
                     cancelButtonText: "Batal"
-                }, function (isConfirm) {
-                    if (isConfirm) {
+                }).then(function (result) {
+                    if (result.isConfirmed) {
                         $.ajax({
                             headers: {
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -460,15 +473,21 @@
                             dataType: "JSON",
                             success: function(resp) {
                                 if(resp.status == true){
-                                    swal({
+                                    Swal.fire({
                                         title: "Success",
                                         text: resp.message,
                                         type: "success"
-                                    }, function(){
-                                        dtPengajuan.ajax.reload();
+                                    }).then(function(result){
+                                        if(result.isConfirmed){
+                                            dtPengajuan.ajax.reload();
+                                        }
                                     });
                                 }else{
-                                    swal('Error', resp.message, 'info')
+                                    Swal.fire({
+                                        title: "Error",
+                                        text:  resp.message,
+                                        icon: "error"
+                                    });
                                 }
                             }
                         });

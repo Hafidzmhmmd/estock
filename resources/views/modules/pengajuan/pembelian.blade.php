@@ -154,7 +154,7 @@
             },
             hide: function (deleteElement) {
                 let item =  $(this);
-                swal({
+                Swal.fire({
                     title: "Apakah yakin?",
                     text: "Anda akan menghapus barang dari list!",
                     type: "warning",
@@ -162,8 +162,8 @@
                     confirmButtonColor: "#dc3545",
                     confirmButtonText: "Ya, Hapus",
                     cancelButtonText: "Batal"
-                }, function (isConfirm) {
-                    if (isConfirm) {
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         item.slideUp(deleteElement);
                     }
                 });
@@ -258,16 +258,20 @@
                 dataType: "JSON",
                 success: function(resp) {
                     if (resp.status == true) {
-                        console.log(resp.draftcode);
-                        swal({
-                            title: "Success",
-                            text: resp.message,
-                            type: "success"
-                        }, function(){
+                        Swal.fire({
+                            title: 'Success',
+                            text:  resp.message,
+                            icon: "success",
+                            timer: 1000
+                        }).then(function() {
                             window.location.href = "{{env('APP_URL')}}/pengajuan/draft/" + resp.draftcode;
-                        });
+                        })
                     } else {
-                        swal('Error', resp.message, 'error')
+                        Swal.fire({
+                            title: "Error",
+                            text:  resp.message,
+                            icon: "error"
+                        });
                     }
                 }
             });
@@ -277,7 +281,7 @@
     function ajukanBarang() {
         let frmData = getData();
         if(frmData){
-            swal({
+            Swal.fire({
                 title: "Ajukan Pembelian",
                 text: "Pastikan barang sudah sesuai",
                 type: "info",
@@ -285,8 +289,8 @@
                 confirmButtonColor: "#28a745",
                 confirmButtonText: "Ya, Ajukan",
                 cancelButtonText: "Batal"
-            }, function (isConfirm) {
-                if (isConfirm) {
+            }).then( function (result) {
+                if (result.isConfirmed) {
                     frmData.append('ajukan', 1)
                     $.ajax({
                         headers: {
@@ -300,16 +304,20 @@
                         dataType: "JSON",
                         success: function(resp) {
                             if (resp.status == true) {
-                                console.log(resp.draftcode);
-                                swal({
-                                    title: "Success",
-                                    text: resp.message,
-                                    type: "success"
-                                }, function(){
+                                Swal.fire({
+                                    title: 'Success',
+                                    text:  resp.message,
+                                    icon: "success",
+                                    timer: 1000
+                                }).then(function() {
                                     window.location.href = "{{env('APP_URL')}}/pengajuan/daftarpembelian/";
-                                });
+                                })
                             } else {
-                                swal('Error', resp.message, 'error')
+                                Swal.fire({
+                                    title: "Error",
+                                    text:  resp.message,
+                                    icon: "error"
+                                });
                             }
                         }
                     });
@@ -317,7 +325,11 @@
             });
 
         } else {
-            swal('Belum disimpan', 'Klik simpan draft terlebih dahulu', 'warning')
+            Swal.fire({
+                title: 'Belum disimpan',
+                text:  'Klik simpan draft terlebih dahulu',
+                icon: "warning",
+            })
         }
     }
 
@@ -367,9 +379,17 @@
             return frmData
         } else {
             if (!isValid) {
-                swal('Data Tidak Valid', 'Pastikan semua input terisi dengan benar', 'error')
+                Swal.fire({
+                    title: 'Data Tidak Valid',
+                    text:  'Pastikan semua input terisi dengan benar',
+                    icon: "error",
+                })
             } else if (dataToSend.length === 0) {
-                swal('Belum ada barang', 'Tambah barang terlebih dahulu', 'warning')
+                Swal.fire({
+                    title: 'Belum ada barang',
+                    text:  'Tambah barang terlebih dahulu',
+                    icon: "warning",
+                })
             }
             return false
         }
