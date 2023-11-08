@@ -28,4 +28,16 @@ class AccessHelpers {
         $user = Auth::user();
         return in_array($user->role,config('app.akses.ppspm'));
     }
+
+    public static function isAdmin() : bool
+    {
+        $user = Auth::user();
+        return in_array($user->role,config('app.akses.admin'));
+    }
+    
+    public static function isSuperAdmin() : bool
+    {
+        $user = Auth::user();
+        return in_array($user->role,config('app.akses.superadmin'));
+    }
 }

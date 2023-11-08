@@ -20,7 +20,7 @@ class DashboardController extends Controller
             $data['proses'] = Pengajuan::where('bidang',$user->bidang)->whereIn('status', ['A','P'])->count();
             $data['disetujui'] = Pengajuan::where('bidang',$user->bidang)->whereIn('status', ['A','F'])->count();
             $view = 'modules.dashboard.pemohon';
-        } else if (AccessHelpers::isPPK() || AccessHelpers::isPengelolaBMN() || AccessHelpers::isPPSPM()){
+        } else {
             $data['totalPengajuan'] = Pengajuan::whereIn('status', ['A','P','F', 'C'])->count();
             $data['pengjuanBulan'] = Pengajuan::whereMonth('created_at', $now->month)->count();
             $data['proses'] = Pengajuan::whereIn('status', ['A','P'])->count();

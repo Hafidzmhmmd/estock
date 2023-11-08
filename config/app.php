@@ -128,6 +128,8 @@ return [
         'pemohon' => [1],
         'ppk' => [2],
         'ppspm' => [6],
+        'admin' => [3,4],
+        'superuser' => [5]
     ],
 
     'flow' => [

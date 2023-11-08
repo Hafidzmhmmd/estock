@@ -14,9 +14,11 @@ use App\Pengajuan;
 use App\PengajuanDetail;
 use App\StockGudang;
 use App\Flow;
+use App\GolonganBarang;
 use App\User;
 use App\UserBidang;
 use App\Gudang;
+use App\RoleUser;
 use Yajra\Datatables\Datatables;
 
 class DataController extends Controller
@@ -26,8 +28,91 @@ class DataController extends Controller
         $data['subsubkelompok'] = SubSubKelompok::all();
         $data['kelompok_barang'] = KelompokBarang::all();
         $data['subkelompok'] = SubKelompok::all();
+        $data['bidang_barang'] = BidangBarang::all();
+        $data['golongan_barang'] = GolonganBarang::all();
         return view('modules.data.barang', $data);
     }
+
+    public function dataGolongan()
+    {
+        return view('modules.data.golongan');
+    }
+
+    public function dataBidang()
+    { 
+        $data['golongan_barang'] = GolonganBarang::all();
+        return view('modules.data.bidang', $data);
+    }
+
+    public function dataKelompok()
+    {
+        $data['subsubkelompok'] = SubSubKelompok::all();
+        $data['kelompok_barang'] = KelompokBarang::all();
+        $data['subkelompok'] = SubKelompok::all(); 
+        $data['golongan_barang'] = GolonganBarang::all();
+        $data['bidang_barang'] = BidangBarang::all();
+        return view('modules.data.kelompok', $data);
+    }
+
+    public function dataUser()
+    { 
+        $data['role'] = RoleUser::all();
+        $data['bidang'] = UserBidang::all();
+        return view('modules.user.index', $data);
+    }
+
+    public function userDataTables(){
+        $data = User::select('users.*', 'user_role.nama_role', 'user_bidang.nama_bidang')
+            ->join('user_role', 'users.role', '=', 'user_role.id')
+            ->join('user_bidang', 'users.bidang', '=', 'user_bidang.id')
+            ->get();
+    
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+
+    public function golonganDataTables(){
+        $data = GolonganBarang::get();
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+
+    public function bidangDataTables(){
+        $data = BidangBarang::select('m_bid_barang.*', 'm_gol_barang.golongan')
+            ->join('m_gol_barang', 'm_bid_barang.gol_id', '=', 'm_gol_barang.gol_id')
+            ->get();
+    
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+
+    public function kelompokDataTables(){
+        $data = KelompokBarang::select('m_kel_barang.*', 'm_bid_barang.bidang', 'm_gol_barang.golongan')
+            ->join('m_bid_barang', 'm_kel_barang.bid_id', '=', 'm_bid_barang.bid_id')
+            ->join('m_gol_barang', 'm_kel_barang.gol_id', '=', 'm_gol_barang.gol_id')
+            ->get();
+    
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+
+    public function subkelompokDataTables(){
+        $data = SubKelompok::select('m_subkel_barang.*', 'm_kel_barang.kelompok', 'm_bid_barang.bidang', 'm_gol_barang.golongan')
+            ->join('m_kel_barang', 'm_subkel_barang.kel_id', '=', 'm_kel_barang.kel_id')
+            ->join('m_bid_barang', 'm_subkel_barang.bid_id', '=', 'm_bid_barang.bid_id')
+            ->join('m_gol_barang', 'm_subkel_barang.gol_id', '=', 'm_gol_barang.gol_id')
+            ->get();
+    
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+
+    public function subsubkelompokDataTables(){
+        $data = SubSubKelompok::select('m_sub_subkel_barang.*', 'm_subkel_barang.subkelompok', 'm_kel_barang.kelompok', 'm_bid_barang.bidang', 'm_gol_barang.golongan')
+            ->join('m_subkel_barang', 'm_sub_subkel_barang.subkel_id', '=', 'm_subkel_barang.subkel_id')
+            ->join('m_kel_barang', 'm_sub_subkel_barang.kel_id', '=', 'm_kel_barang.kel_id')
+            ->join('m_bid_barang', 'm_sub_subkel_barang.bid_id', '=', 'm_bid_barang.bid_id')
+            ->join('m_gol_barang', 'm_sub_subkel_barang.gol_id', '=', 'm_gol_barang.gol_id')
+            ->get();
+    
+        return DataTables::of($data)->addIndexColumn()->make(true);
+    }
+ 
 
     public function barangDataTables(Request $request){
         $data = Barang::select('*');

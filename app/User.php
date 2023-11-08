@@ -25,7 +25,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'role',
+        'password',
     ];
 
     protected $table = 'users';
