@@ -147,10 +147,12 @@ class GudangController extends Controller
                             'gudangid' => $key,
                         ], $logs);
 
+                        $gudang = Gudang::where('bidang_id', $user->bidang);
                         $pengambilan = new Pengambilan;
                         $pengambilan->nomor = $nomor;
                         $pengambilan->tgl_pengambilan = Carbon::now();
                         $pengambilan->user = $user->id;
+                        $pengambilan->gudang_id = $user->id;
                         $pengambilan->save();
 
                     }

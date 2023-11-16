@@ -86,8 +86,8 @@ class Sistem extends Migration
             $table->string('nomor');
             $table->dateTime('tgl_pengambilan');
             $table->integer('user');
-            $table->integer('admin');
-            $table->string('print_out');
+            $table->integer('admin')->nullable();
+            $table->string('print_out')->nullable();
             $table->integer('gudang_id');
             $table->timestamps();
         });
