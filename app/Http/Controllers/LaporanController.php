@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
 use PDF;
 use Yajra\Datatables\Datatables;
+use App\Http\Helpers\StockHelpers;
 
 class LaporanController extends Controller
 {
@@ -121,7 +122,12 @@ class LaporanController extends Controller
     }
 
     function listOpname(){
-        $data = LaporanCreate::all();
+        $data = LaporanCreate::where('type','opname');
+        return Datatables::of($data)->toJson();
+    }
+
+    function listBukuPersediaan(){
+        $data = LaporanCreate::where('type','persediaan');
         return Datatables::of($data)->toJson();
     }
 
@@ -131,5 +137,70 @@ class LaporanController extends Controller
         $subkelompok = SubKelompok::all();
         $gudang = Gudang::where('aktif', 1)->get()->pluck('id', 'nama_gudang');
         return view('modules.laporan.bukupersediaan.index', compact('gudang', 'subsubkelompok', 'kelompok_barang', 'subkelompok'));
+    }
+
+    public function createBukuPersediaan(Request $request){
+        $rsp = ['status' => false];
+        $date_start = $request->date_start;
+        $dateS = Carbon::createFromFormat('d/m/Y', $date_start);
+        $date_end = $request->date_end;
+        $dateE = Carbon::createFromFormat('d/m/Y',  $date_end);
+        $data['dstart'] = $date_start;
+        $data['dend'] = $date_end;
+        $id_barang = $request->barangid;
+        $data['barang'] = Barang::find($id_barang);
+
+        $string_before = $dateS->format('Y-m-d')." 23:59:59";
+        $string_after = $dateE->format('Y-m-d')." 23:59:59";
+        $data['saldo_awal'] = StockHelpers::getStockOnDate($dateS, $id_barang);
+        $data['record_masuk'] = DB::select(DB::raw("
+            SELECT pd.id_barang,
+                pd.nama_barang,
+                pd.harga_satuan,
+                pd.jumlah_barang,
+                pd.draftcode,
+                p.tgl_disetujui
+            FROM pengajuan_detail pd
+            LEFT JOIN pengajuan p on p.draftcode = pd.draftcode
+            WHERE  p.`status` = 'F' AND p.tgl_disetujui >= ? AND pd.id_barang = ? AND p.tgl_disetujui <= ?
+            "), [$string_before, $id_barang, $string_after ]);
+        $data['record_keluar'] = DB::select(DB::raw("
+            SELECT
+                sc.draftcode,
+                sc.barangid,
+                sc.jumlah as ambil,
+                sc.created_at,
+                p.harga_satuan,
+                p.harga_satuan * sc.jumlah as harga_ambil
+            FROM
+                stock_change_log sc
+            LEFT JOIN pengajuan_detail p ON p.draftcode = sc.draftcode AND p.id_barang = sc.barangid
+            WHERE
+                keterangan = 'pengambilan barang'
+                AND sc.status = 1
+                AND sc.created_at >= ? AND sc.barangid = ? AND sc.created_at <= ?
+            ORDER BY sc.id asc
+        "),[$string_before, $id_barang, $string_after ]);
+
+        $pdf = PDF::loadView('_pdf.bukupersediaan', $data);
+        $pdf->setPaper('A4', 'landscape');
+        $output = $pdf->output();
+
+        $bytes = bin2hex(random_bytes(20));
+        $filename = "$bytes.pdf";
+        $path = "bukupersediaan/$filename";
+        Storage::disk('local')->put($path, $output);
+
+        $user = Auth::user();
+        $createpdf = new LaporanCreate;
+        $createpdf->type = 'persediaan';
+        $createpdf->path = $path ;
+        $createpdf->author = $user->id;
+        $createpdf->nama_barang = $data['barang']->uraian;
+        $createpdf->periode = "$date_start s/d $date_end";
+        if($createpdf->save()){
+            $rsp['status'] = true;
+        }
+        return response()->json($rsp);
     }
 }

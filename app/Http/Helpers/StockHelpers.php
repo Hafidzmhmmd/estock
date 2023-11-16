@@ -179,4 +179,44 @@ class StockHelpers {
             return 0;
         }
     }
+
+    public static function getStockOnDate($dateS,$id_barang){
+        $date = $dateS->format('Y-m-d')." 23:59:59";
+        $param = [$date,$date];
+        if($id_barang){
+            $strBarang = ' AND pd.id_barang = ? ';
+            $param = [$date,$date, $id_barang];
+        }
+        $data =  DB::select( DB::raw("
+        SELECT
+            pd.draftcode,
+            pd.id_barang,
+            pd.nama_barang,
+            pd.jumlah_barang,
+            harga_satuan,
+            ot.jumlah as ambil,
+            pd.jumlah_barang - COALESCE(ot.jumlah, 0) as stock,
+            (pd.jumlah_barang - ot.jumlah) * harga_satuan as saldo
+        FROM
+            pengajuan_detail pd
+            LEFT JOIN pengajuan p ON p.draftcode = pd.draftcode
+            LEFT JOIN ( SELECT draftcode, barangid, SUM(jumlah) as jumlah
+            FROM stock_change_log
+            WHERE keterangan = 'pengambilan barang' AND `status` = 1
+            AND created_at <= ?
+            GROUP BY  draftcode, barangid
+            ) ot ON ot.draftcode = pd.draftcode
+            AND ot.barangid = pd.id_barang
+        WHERE
+            p.`status` = 'F'
+            AND pd.jumlah_barang - COALESCE(ot.jumlah, 0) > 0
+            AND p.tgl_disetujui <= ?
+            $strBarang
+        ORDER BY
+            pd.id_barang,
+            pd.draftcode,
+            pd.created_at
+        "), $param);
+        return $data;
+    }
 }

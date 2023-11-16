@@ -55,6 +55,13 @@
                             @endforeach
                         </select>
                     </div>
+                    <hr>
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" placeholder="Pencarian" aria-label="Pencarian" aria-describedby="basic-addon2" id="{{$table_name}}_srch">
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-secondary" type="button"><i class="icon-magnifier"></i></button>
+                        </div>
+                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover center-aligned-table" id="{{$table_name}}" style="width:100%">
@@ -62,7 +69,6 @@
                             <tr>
                                 <th>Kode</th>
                                 <th>Nama Barang</th>
-                                <th>Harga Maksimum</th>
                                 <th>Action</th>
                             </tr>
                             </thead>
@@ -84,12 +90,16 @@
       .DataTable({
         processing: true,
         serverSide: true,
+        "searching": false,
+        "bInfo":false,
+        "bLengthChange" : false,
         "ajax": {
             "url": "{{ route('data.barangDataTables') }}",
             data: function (d) {
                 d.subkel = $('#sclSubKelompok_{{$table_name}}').val()
                 d.kel = $('#slcKelompok_{{$table_name}}').val()
                 d.subsub = $('#sclSubSubKelompok_{{$table_name}}').val()
+                d.srch = $('#{{$table_name}}_srch').val()
             }
         },
         fnDrawCallback: function() {
@@ -104,9 +114,6 @@
                 data: 'uraian'
             },
             {
-                data: 'harga_maksimum'
-            },
-            {
                 data: ''
             },
         ],
@@ -116,9 +123,10 @@
                 targets: -1,
                 title: 'Actions',
                 orderable: false,
+                class: 'text-center',
                 render: function(data, type, full, meta) {
                     return (`
-                    <button class="btn btn-warning btn-sm" onclick="{{$rowclick}}"><i class="fa fa-shopping-cart"></i></button>
+                    <button class="btn btn-warning btn-sm" onclick="{{$rowclick}}"><i class="fa fa-book"></i></button>
                     `);
                 }
             }
@@ -163,6 +171,16 @@
             child.find(`option`).show()
         }
         dt_{{$table_name}}.draw();
+    });
+
+    let redrawtbl =  function() {
+        dt_{{$table_name}}.draw()
+    };
+
+    var timeoutId = 0;
+    $('#{{$table_name}}_srch').keypress(function () {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout( redrawtbl, 500);
     });
 </script>
 @endpush

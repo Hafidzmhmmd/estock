@@ -10,12 +10,14 @@ use App\RiwayatGudang;
 use App\ChangeLog;
 use App\Pengajuan;
 use App\PengajuanDetail;
+use App\Pengambilan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\RiwayatHelpers;
 use App\Http\Helpers\CounterHelpers;
 use App\Http\Helpers\StockHelpers;
 use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
 
 class GudangController extends Controller
 {
@@ -144,6 +146,13 @@ class GudangController extends Controller
                             'bidangid' => $user->bidang,
                             'gudangid' => $key,
                         ], $logs);
+
+                        $pengambilan = new Pengambilan;
+                        $pengambilan->nomor = $nomor;
+                        $pengambilan->tgl_pengambilan = Carbon::now();
+                        $pengambilan->user = $user->id;
+                        $pengambilan->save();
+
                     }
                 }
             });

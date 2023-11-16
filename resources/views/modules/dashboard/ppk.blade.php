@@ -162,7 +162,7 @@
                 lineWidth: 0,
                 smooth: false,
                 hideHover: 'auto',
-                lineColors: ['#242a2b', '#5dd0fc'],
+                lineColors: ['#5dd0fc', '#242a2b'],
                 resize: true,
                 parseTime:false,
             });

@@ -110,6 +110,8 @@ Route::middleware(['access'])->group(function () {
         Route::get('/opname/list', 'LaporanController@listOpname')->name('listOpname');
 
         Route::get('/bukuPersediaan', 'LaporanController@bukuPersediaan')->name('bukupersediaan');
+        Route::post('/bukuPersediaan', 'LaporanController@createBukuPersediaan');
+        Route::get('/bukuPersediaan/list', 'LaporanController@listBukuPersediaan')->name('listBukuPersediaan');
     });
 
     Route::get('getfile/{folder}/{filename}', 'FileController@getfile')->name('getfile');

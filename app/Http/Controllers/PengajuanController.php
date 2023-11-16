@@ -101,7 +101,7 @@ class PengajuanController extends Controller
                 $dtDetail->subkel = $dt['subkel'];
                 $dtDetail->nama_barang = $dt['namaBarang'];
                 $dtDetail->satuan = $dt['satuan'];
-                $dtDetail->harga_maksimum = $dt['hargaMaks'];
+                $dtDetail->harga_maksimum = empty($dt['hargaMaks']) ? 0 : $dt['hargaMaks'];
                 $dtDetail->harga_satuan = $dt['hargaBarang'];
                 $dtDetail->jumlah_barang = $dt['jumlahBarang'];
                 $dtDetail->total_harga = $dt['totalHarga'];

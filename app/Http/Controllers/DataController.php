@@ -40,7 +40,7 @@ class DataController extends Controller
     }
 
     public function dataBidang()
-    { 
+    {
         $data['golongan_barang'] = GolonganBarang::all();
         return view('modules.data.bidang', $data);
     }
@@ -49,14 +49,14 @@ class DataController extends Controller
     {
         $data['subsubkelompok'] = SubSubKelompok::all();
         $data['kelompok_barang'] = KelompokBarang::all();
-        $data['subkelompok'] = SubKelompok::all(); 
+        $data['subkelompok'] = SubKelompok::all();
         $data['golongan_barang'] = GolonganBarang::all();
         $data['bidang_barang'] = BidangBarang::all();
         return view('modules.data.kelompok', $data);
     }
 
     public function dataUser()
-    { 
+    {
         $data['role'] = RoleUser::all();
         $data['bidang'] = UserBidang::all();
         return view('modules.user.index', $data);
@@ -67,7 +67,7 @@ class DataController extends Controller
             ->join('user_role', 'users.role', '=', 'user_role.id')
             ->join('user_bidang', 'users.bidang', '=', 'user_bidang.id')
             ->get();
-    
+
         return DataTables::of($data)->addIndexColumn()->make(true);
     }
 
@@ -80,7 +80,7 @@ class DataController extends Controller
         $data = BidangBarang::select('m_bid_barang.*', 'm_gol_barang.golongan')
             ->join('m_gol_barang', 'm_bid_barang.gol_id', '=', 'm_gol_barang.gol_id')
             ->get();
-    
+
         return DataTables::of($data)->addIndexColumn()->make(true);
     }
 
@@ -89,7 +89,7 @@ class DataController extends Controller
             ->join('m_bid_barang', 'm_kel_barang.bid_id', '=', 'm_bid_barang.bid_id')
             ->join('m_gol_barang', 'm_kel_barang.gol_id', '=', 'm_gol_barang.gol_id')
             ->get();
-    
+
         return DataTables::of($data)->addIndexColumn()->make(true);
     }
 
@@ -99,7 +99,7 @@ class DataController extends Controller
             ->join('m_bid_barang', 'm_subkel_barang.bid_id', '=', 'm_bid_barang.bid_id')
             ->join('m_gol_barang', 'm_subkel_barang.gol_id', '=', 'm_gol_barang.gol_id')
             ->get();
-    
+
         return DataTables::of($data)->addIndexColumn()->make(true);
     }
 
@@ -110,10 +110,10 @@ class DataController extends Controller
             ->join('m_bid_barang', 'm_sub_subkel_barang.bid_id', '=', 'm_bid_barang.bid_id')
             ->join('m_gol_barang', 'm_sub_subkel_barang.gol_id', '=', 'm_gol_barang.gol_id')
             ->get();
-    
+
         return DataTables::of($data)->addIndexColumn()->make(true);
     }
- 
+
 
     public function barangDataTables(Request $request){
         $data = Barang::select('*');
@@ -138,6 +138,9 @@ class DataController extends Controller
             }
             if (!empty($request->subsub)) {
                 $instance->whereRaw("CONCAT(sub_subkel_id,subkel_id,kel_id,bid_id,gol_id) = ?",[$request->subsub]);
+            }
+            if(!empty($request->srch)){
+                $instance->where('uraian', 'like', "%$request->srch%");
             }
         })
         ->toJson();
