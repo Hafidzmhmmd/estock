@@ -85,7 +85,7 @@ Route::middleware(['access'])->group(function () {
         Route::get('golongan', 'DataController@dataGolongan')->name('golongan');
         Route::get('bidang', 'DataController@dataBidang')->name('bidang');
         Route::get('kelompok', 'DataController@dataKelompok')->name('kelompok');
-        Route::get('user', 'DataController@dataUser')->name('user');
+        Route::get('user', 'DataController@dataUser')->name('userapp');
 
         Route::get('golonganDataTables', 'DataController@golonganDataTables')->name('golonganDataTables');
         Route::get('bidangDataTables', 'DataController@bidangDataTables')->name('bidangDataTables');

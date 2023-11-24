@@ -185,7 +185,9 @@ class PengajuanSeeder extends Seeder
                         'satuan' => $barang->satuan,
                         'harga_satuan' => $detail['harga_satuan'],
                         'jumlah_barang' => $detail['jumlah_barang'],
-                        'total_harga' => intval($detail['harga_satuan']) * intval($detail['jumlah_barang'])
+                        'total_harga' => intval($detail['harga_satuan']) * intval($detail['jumlah_barang']),
+                        'created_at' => $d['tgl_disetujui'],
+                        'updated_at' => $d['tgl_disetujui'],
                     ];
                     DB::table("pengajuan_detail")->insert($det);
 
@@ -205,7 +207,9 @@ class PengajuanSeeder extends Seeder
                         'userid' => 2,
                         'draftcode' => $d['draftcode'],
                         'gudangid' => $gudang->id,
-                        'bidangid' => $d['bidang']
+                        'bidangid' => $d['bidang'],
+                        'created_at' => $d['tgl_disetujui'],
+                        'updated_at' => $d['tgl_disetujui'],
                     ];
                     DB::table("riwayat_gudang")->insert($riwayat);
                     $riwayat_id ++;

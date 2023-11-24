@@ -30,6 +30,13 @@ class Access extends Migration
             $table->integer('userid');
             $table->timestamps();
         });
+
+        Schema::create('role_menu', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->integer('role');
+            $table->integer('menuid');
+            $table->timestamps();
+        });
     }
 
     /**
@@ -42,5 +49,6 @@ class Access extends Migration
         //
         Schema::dropIfExists('menu');
         Schema::dropIfExists('menu_access');
+        Schema::dropIfExists('role_menu');
     }
 }

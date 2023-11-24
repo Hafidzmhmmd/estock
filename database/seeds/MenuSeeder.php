@@ -96,7 +96,7 @@ class MenuSeeder extends Seeder
             [
                 'title' => 'Users',
                 'group' => 5,
-                'pathname' => 'users',
+                'pathname' => 'userapp',
                 'has_sub' => 0,
                 'urutan' => 11,
                 'access_role' => [3],
@@ -143,6 +143,13 @@ class MenuSeeder extends Seeder
                     'userid' => $u->id,
                 ];
                 DB::table("menu_access")->insert( $acc );
+            }
+            foreach($d['access_role'] as $role){
+                $rm = [
+                    'role' => $role,
+                    'menuid' => $index+1
+                ];
+                DB::table("role_menu")->insert( $rm );
             }
         }
     }

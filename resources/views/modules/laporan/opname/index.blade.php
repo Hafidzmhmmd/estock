@@ -148,6 +148,7 @@
 
     $('#modalCreate .laporanbtn').click(function(){
         let frm = new FormData($('#create_laporan_form')[0])
+        Swal.showLoading();
         $.ajax({
             url: "{{route('laporan.opname')}}",
             data: frm,
@@ -158,8 +159,12 @@
             success: function (response) {
                 if(response.status){
                     $('#modalCreate').modal('hide');
+                    Swal.fire('Success', 'laporan berhasil dibuat', 'success')
                     dt.ajax.reload();
                 }
+            },
+            error: function (request, status, error) {
+                Swal.fire('perhatian', 'pembuatan laporan memakan waktu lama...silahkan refresh halaman ini secara berkala', 'warning')
             }
         });
     })
