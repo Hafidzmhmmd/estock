@@ -1492,6 +1492,9 @@ class MasterBarangSeeder extends Seeder
             ['subkel_id'=>'01','kel_id'=>'05','bid_id'=>'01','gol_id'=>'1','sub_subkel_id'=>'008','kode'=>'000014','uraian'=>'Akta Tukar Menukar (ATM)','satuan'=>'Set'],
             ['subkel_id'=>'01','kel_id'=>'05','bid_id'=>'01','gol_id'=>'1','sub_subkel_id'=>'008','kode'=>'000015','uraian'=>'Sambungan Sertipikat Satuan Rumah Susun','satuan'=>'Lembar'],
         ];
-        DB::table($tabel)->insert($data);
+        foreach($data as $index => $d){
+            $d['identifier'] = $d['gol_id'].$d['bid_id'].$d['kel_id'].$d['subkel_id'].$d['sub_subkel_id'].$d['kode'];
+            DB::table($tabel)->insert($d);
+        }
     }
 }

@@ -63,6 +63,7 @@ class CreateMasterData extends Migration
             $table->string('kode');
             $table->string('uraian');
             $table->string('satuan');
+            $table->string('identifier');
             $table->integer('harga_maksimum')->nullable();
         });
     }

@@ -31,6 +31,9 @@ class DatabaseSeeder extends Seeder
 
             //flow
             FlowSeeder::class,
+
+            //pengajuan
+            PengajuanSeeder::class,
         ]);
         //user
         // DB::table('users')->insert([
