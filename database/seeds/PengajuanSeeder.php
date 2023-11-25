@@ -198,6 +198,8 @@ class PengajuanSeeder extends Seeder
                         'rencana' => 0,
                         'stock' => $detail['jumlah_barang'],
                         'draftcode' => $d['draftcode'],
+                        'created_at' => $d['tgl_disetujui'],
+                        'updated_at' => $d['tgl_disetujui'],
                     ];
                     DB::table("stock_gudang")->insert($stock);
                     $stock_id ++;
